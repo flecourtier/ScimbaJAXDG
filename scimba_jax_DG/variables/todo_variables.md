@@ -45,11 +45,11 @@
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour bases apprenable - `Patchwise`).
 
-- [ ] **Cas test 6 (...) :** 
+- [x] **Cas test 6 (`variable_cellwise_basis.py`) :** 
 
     - *Tester :* la classe `Variables` sans post-processing et une base réseau (`Cellwise`).
 
-    - *Détails :* Même cas test que cas test 4 mais un réseau par maille.
+    - *Détails :* Même cas test que cas test 4.a mais un réseau par maille. (On pourra essayer de rajouter une condition de continuité entre les mailles dans la loss pour voir l'impact).
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour bases apprenable - `Cellwise`).
 
@@ -64,6 +64,11 @@
 - [ ] **Supplémentaires :**
 
     - [x] Rajouter un evaluate général (en plus du `evaluate_quad`)
-    - [ ] Mettre le `find_cell_index` dans le vmap dans un `classical_evaluate_2` (et comparer)
-    - [ ] Adapter la projection/evaluation au cas `Cellwise`
+    - [x] Mettre le `find_cell_index` dans le vmap dans un `classical_evaluate_2` (et comparer)
     - [ ] Modifier `Variables` pour prendre en compte deux bases, la trial et la test (supposer que test est même type que trial ou analytique).
+    - [x] Adapter la projection/evaluation au cas `Cellwise`
+    - [ ] Vérifier quelle signature est la meilleur pour le `_call__` de `Cellwise` :
+        ```[python]
+        def __call__(self, cell_module, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
+        def __call__(self, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
+        ```
