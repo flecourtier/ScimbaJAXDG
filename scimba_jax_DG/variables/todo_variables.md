@@ -23,7 +23,7 @@
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour un PP apprenable).
 
-- [ ] **Cas test 4 (...) :** 
+- [x] **Cas test 4.a (`variable_patchwise_basis.py`) :** 
 
     - *Tester :* la classe `Variables` sans post-processing et une base réseau (`Patchwise`).
 
@@ -31,7 +31,11 @@
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour bases apprenable - `Patchwise`).
 
-    <!-- Prendre $f(x) = (x^2+2x+1)sin(2x)$. -->
+- [x] **Cas test 4.b (`variable_patchwise_basis_with_mapping.py`) :** 
+
+    - *Tester :* la même chose. Ajouter un `Mapping` entraînable pour le maillage.
+
+    - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour mapping apprenable).
 
 - [ ] **Cas test 5 (...) :** 
 
@@ -59,6 +63,7 @@
 
 - [ ] **Supplémentaires :**
 
-    - [ ] Rajouter un evaluate général (en plus du `evaluate_quad`)
+    - [x] Rajouter un evaluate général (en plus du `evaluate_quad`)
+    - [ ] Mettre le `find_cell_index` dans le vmap dans un `classical_evaluate_2` (et comparer)
     - [ ] Adapter la projection/evaluation au cas `Cellwise`
     - [ ] Modifier `Variables` pour prendre en compte deux bases, la trial et la test (supposer que test est même type que trial ou analytique).
