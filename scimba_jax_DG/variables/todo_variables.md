@@ -121,11 +121,15 @@
     | 5 | " | " | " | " | " | " | " | [(voir)](images/variable_cellwise_basis_nc5.png),[(zoom)](images/variable_cellwise_basis_nc5_zoom.png) |
     | 10 | " | 2 | " | " | " | " | " | [(voir)](images/variable_cellwise_basis_nc10.png) |
 
-- [ ] **Cas test 7 (...) :** 
+- [x] **Cas test 7 (`variable_cellwise_basis_and_local_post_processing_NN.py`) :** 
 
     - *Tester :* la classe `Variables` avec post-processing (PP réseau) et une base réseau (`Cellwise`).
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour un PP apprenable et bases apprenable - `Cellwise`).
+
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
+    |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
+    | 8 | 20 | 2 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,C}$ | $\mathcal{P}_\theta$ | [(voir)](images/variable_cellwise_basis_and_local_post_processing_NN.png),[(zoom)](images/variable_cellwise_basis_and_local_post_processing_NN_zoom.png) |
 
 - [ ] **Cas test 8 (...) :** 
 
