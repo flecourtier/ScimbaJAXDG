@@ -59,11 +59,9 @@
 
     ---
 
-    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing |
-    |---------|--------|-------------|---------|-------------|---------|--------|-------------|
-    | 5 | 4 | 2 | 1 | $\sin(x^2+1)$ | / | $\varphi_{k,i}$ | $\mathcal{P}_\theta$ |
-
-    ![variable_local_post_processing_NN](variable_local_post_processing_NN.png)
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
+    |---------|--------|-------------|---------|-------------|---------|--------|-------------|--------|
+    | 5 | 4 | 2 | 1 | $\sin(x^2+1)$ | / | $\varphi_{k,i}$ | $\mathcal{P}_\theta$ | [(voir)](images/variable_local_post_processing_NN.png) |
 
 - [x] **Cas test 4.a (`variable_patchwise_basis.py`) :** 
 
@@ -75,11 +73,9 @@
 
     ---
 
-    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing |
-    |---------|--------|-------------|---------|-------------|---------|--------|-------------|
-    | 1 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$ | / |
-
-    ![variable_local_post_processing_NN](variable_patchwise_basis.png)
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
+    |---------|--------|-------------|---------|-------------|---------|--------|-------------|--------|
+    | 1 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variable_patchwise_basis.png) |
 
 
 - [x] **Cas test 4.b (`variable_patchwise_basis_with_mapping.py`) :** 
@@ -88,11 +84,11 @@
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour mapping apprenable).
 
-    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing |
-    |---------|--------|-------------|---------|-------------|---------|--------|-------------|
-    | 1 | 10 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | $g_\theta$ | $\varphi_{k,i}^{\theta,P}$ | / |
+    ---
 
-    ![variable_local_post_processing_NN](variable_patchwise_basis_with_mapping.png)
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
+    |---------|--------|-------------|---------|-------------|---------|--------|-------------|--------|
+    | 1 | 10 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | $g_\theta$ | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variable_patchwise_basis_with_mapping.png) |
 
 - [x] **Cas test 5 (`variable_patchwise_basis_pretrained.py`) :** 
 
@@ -102,11 +98,11 @@
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour bases apprenable - `Patchwise`).
 
-    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing |
-    |---------|--------|-------------|---------|-------------|---------|--------|-------------|
-    | 1 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$ | / |
+    ---
 
-    ![variable_local_post_processing_NN](variable_patchwise_basis_pretrained.png)
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
+    |---------|--------|-------------|---------|-------------|---------|--------|-------------|--------|
+    | 1 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variable_patchwise_basis_pretrained.png) |
 
 
 - [x] **Cas test 6 (`variable_cellwise_basis.py`) :** 
@@ -116,6 +112,14 @@
     - *Détails :* Même cas test que cas test 4.a mais un réseau par maille. (On pourra essayer de rajouter une condition de continuité entre les mailles dans la loss pour voir l'impact).
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour bases apprenable - `Cellwise`).
+
+    ---
+
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
+    |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
+    | 2 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,C}$ | / | [(voir)](images/variable_cellwise_basis.png),[(zoom)](images/variable_cellwise_basis_zoom.png) |
+    | 5 | " | " | " | " | " | " | " | [(voir)](images/variable_cellwise_basis_nc5.png),[(zoom)](images/variable_cellwise_basis_nc5_zoom.png) |
+    | 10 | " | 2 | " | " | " | " | " | [(voir)](images/variable_cellwise_basis_nc10.png) |
 
 - [ ] **Cas test 7 (...) :** 
 
