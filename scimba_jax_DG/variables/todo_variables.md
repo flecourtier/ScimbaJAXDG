@@ -131,13 +131,13 @@
     |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
     | 8 | 20 | 2 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,C}$ | $\mathcal{P}_\theta$ | [(voir)](images/variable_cellwise_basis_and_local_post_processing_NN.png),[(zoom)](images/variable_cellwise_basis_and_local_post_processing_NN_zoom.png) |
 
-- [ ] **Cas test 8 (...) :** 
+<!-- - [ ] **Cas test 8 (...) :** 
 
     - *Tester :* la classe `Variables` sans post-processing et une base analytique (Taylor), mais avec un `Mapping` entrainable.
 
     - *Détails :* ...
 
-    - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour mapping apprenable).
+    - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour mapping apprenable). -->
 
 - [ ] **Supplémentaires :**
 
@@ -154,9 +154,15 @@
         |`CellwiseParametricBasis`| `AnalyticBasis`|
         |`CellwiseParametricBasis`| `CellwiseParametricBasis`|
 
+    - [x] Regarder la différence de temps et de convergence entre le cas `Patchwise` et `Cellwise` sur 5 cellules
+
+        | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
+        |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
+        | 5 | 20 | 2 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$/$\varphi_{k,i}^{\theta,C}$ | / | [(voir)](images/compare_patchwise_cellwise.png) |
+
     - [ ] Vérifier quelle signature est la meilleur pour le `_call__` de `Cellwise` :
         ```[python]
         def __call__(self, cell_module, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
         def __call__(self, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
+
         ```
-    - [ ] Regarder la différence de temps et de convergence entre le cas `Patchwise` et `Cellwise` sur 5 cellules
