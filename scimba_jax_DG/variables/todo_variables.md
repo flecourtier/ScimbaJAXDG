@@ -166,3 +166,5 @@
         def __call__(self, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
 
         ```
+
+    - [ ] Relancer tous les tests (+ passer les losses en ylog).
