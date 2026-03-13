@@ -65,6 +65,6 @@
 
 - [ ] **Supplémentaires :**
 
-    - [ ] Rajouter un test sur les quadratures pour vérifier les calculs d'intégrales.
+    - [x] Rajouter un test sur les quadratures pour vérifier les calculs d'intégrales.
     - [ ] Faire la documentation (en anglais).
-    - [ ] Passer les fonctions qui dépendent de `self` en `@staticmethod`.
+    - [x] Passer les fonctions qui dépendent de `self` en `@staticmethod`.
