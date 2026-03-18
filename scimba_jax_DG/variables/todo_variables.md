@@ -20,6 +20,8 @@
 
 ## **Cas tests**
 
+- [ ] Tous ces résultats sont à mettre à jour. 
+
 - [x] **Cas test 1 (`variable.py`) :** 
 
     - *Tester :* la classe `Variables` sans post-processing (PP None) avec une base analytique (Taylor).
