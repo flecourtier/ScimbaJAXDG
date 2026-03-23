@@ -20,8 +20,6 @@
 
 ## **Cas tests**
 
-- [ ] Tous ces résultats sont à mettre à jour. 
-
 - [x] **Cas test 1 (`variable.py`) :** 
 
     - *Tester :* la classe `Variables` sans post-processing (PP None) avec une base analytique (Taylor).
@@ -162,11 +160,11 @@
         |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
         | 5 | 20 | 2 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$/$\varphi_{k,i}^{\theta,C}$ | / | [(voir)](images/compare_patchwise_cellwise.png) |
 
+    - [x] Relancer tous les tests (+ passer les losses en ylog).
+    
     - [ ] Vérifier quelle signature est la meilleur pour le `_call__` de `Cellwise` :
         ```[python]
         def __call__(self, cell_module, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
         def __call__(self, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
 
         ```
-
-    - [ ] Relancer tous les tests (+ passer les losses en ylog).
