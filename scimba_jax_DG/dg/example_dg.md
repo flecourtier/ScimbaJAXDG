@@ -51,11 +51,11 @@ $$\underbrace{\int_{C_k} \nabla u_h(x) \nabla\varphi_{k,j}(x)\,dx}_{b[k,j,0]} = 
 
 **Assertions:**
 
-- $b[:,0,0] \approx 0$
+- `b[:,0,0]`$\approx 0$
 
   $\longrightarrow$ $\nabla\varphi_{k,0}=0$, donc pour $j=0$ la partie bilinéaire s'annule
 
-- $b[:,1,0] \approx h$
+- `b[:,1,0]`$\approx h$
   
   $\longrightarrow$ $\nabla u_h = 1$ et $\nabla \varphi_{k,1} = 1$ donc pour $j=1$ :
 
@@ -63,7 +63,7 @@ $$\underbrace{\int_{C_k} \nabla u_h(x) \nabla\varphi_{k,j}(x)\,dx}_{b[k,j,0]} = 
 
 **Vérifications visuelles:**
 
-- $l[k,0,0]-f(\bar{x_k})\,h \approx 0$
+- `l[k,0,0]-f(\bar{x_k})\,h \approx 0`
 
   $\longrightarrow$ la partie linéaire doit approcher la moyenne de $f$ sur la cellule, qui est proche de la valeur de $f$ au centre pour une fonction lisse.
 
@@ -114,62 +114,84 @@ Avec la convention de signe utilisée dans le code:
 
   $\longrightarrow$ la contribution côté droit est constante et opposée, ce qui valide la cohérence d'orientation gauche/droite.
 
-<!-- ## 3) `assemble_scheme`
+**Notation:** On introduit alors la notation locale de contribution de flux sur une face interne $F_l$:
+
+$$
+\Phi_{F_l,j}^{L}:=-\mathcal F(u_h^L,u_h^R),
+\qquad
+\Phi_{F_l,j}^{R}:=+\mathcal F(u_h^L,u_h^R),
+$$
+
+où $\Phi_{F_l,j}^{L}=$`fluxL[l,j,0]` (resp. $\Phi_{F_l,j}^{R}=$`fluxR[l,j,0]`) correspond à la contribution de flux à injecter dans le résidu local de la cellule à gauche (resp. à droite) de $F_l$ pour la fonction de base d'indice $j$.
+
+Autrement dit, `fluxL` et `fluxR` sont les tenseurs qui empilent ces contributions pour tous les indices $(l,j)$.
+
+## 3) `assemble_scheme`
 
 Objectif: vérifier l'assemblage complet du résidu DG (volume + flux).
 
-## Vérification de structure globale
-
-Le résidu assemblé `res` doit avoir la forme:
+Le script appelle `assembly_scheme()`, puis vectorise/compile avec `jit` pour obtenir le résidu global `res` de shape $(n_c,n_b,n_u)$. Le vecteur est ensuite réindexé en
 
 $$
-(n_c\times n_b\times n_u,)
+res\_grid \in \mathbb{R}^{n_c\times n_b\times n_u}
 $$
 
-puis est réindexé en grille:
+afin d'analyser les contributions cellule par cellule.
+
+La structure du résidu local dans la cellule $C_k$ est
 
 $$
-res\_grid \in \mathbb{R}^{n_c\times n_b\times n_u}.
+res[k,j,0] = \underbrace{b[k,j,0]-l[k,j,0]}_{\text{volume}} + \underbrace{\Phi_{\partial C_k,j}}_{\text{flux}},
+\qquad j\in\{0,\dots,n_b-1\}.
 $$
 
-## Test intérieur (cellules 1 à n_c-2)
+Ici:
 
-Analyse attendue:
+- $b[k,j,0]=\int_{C_k} \nabla u_h\,\nabla\varphi_{k,j}\,dx$,
+- $l[k,j,0]=\int_{C_k} f\,\varphi_{k,j}\,dx$,
+- $\Phi_{\partial C_k,j}$ regroupe les contributions de flux des faces de $C_k$.
 
-- Terme volume:
-  - $j=0$: $res_{vol}\approx -f(x_c)\,h$
-  - $j=1$: $res_{vol}\approx h$
-- Terme flux (faces internes): contributions opposées qui se compensent dans une cellule intérieure.
-
-Donc:
+En notant $F_l$ la face interne d'indice $l\in\{1,\dots,n_f-2\}$ (avec $F_l$ entre $C_{l-1}$ et $C_l$), on a pour une cellule intérieure $k\in\{1,\dots,n_c-2\}$:
 
 $$
-res[k,0,0] \approx -f(x_{c,k})\,h,
-\qquad
-res[k,1,0] \approx h.
+\Phi_{\partial C_k,j}=\Phi_{F_k,j}^{R}+\Phi_{F_{k+1},j}^{L}.
 $$
 
-Ces deux relations sont vérifiées par assertions `allclose`.
+Cela correspond exactement à: contribution depuis la face gauche de $C_k$ (côté droit de $F_k$) + contribution depuis la face droite de $C_k$ (côté gauche de $F_{k+1}$).
 
-## Test bord (cellules 0 et n_c-1)
+Aux cellules de bord, les contributions sur la face de bord elle-même se compensent localement (même cellule des deux côtés de la face dans le code). Le décalage net vient donc de la seule face interne adjacente:
 
-Aux bords, la compensation des flux n'est pas symétrique comme à l'intérieur:
-
-- la cellule gauche reçoit un décalage net $+1$;
-- la cellule droite reçoit un décalage net $-1$.
-
-Le script vérifie donc:
-
+- pour la cellule de bord gauche $C_0$:
 $$
-res[0,j]=volume[0,j]+1,
-\qquad
-res[n_c-1,j]=volume[n_c-1,j]-1
+\Phi_{\partial C_0,j}=\Phi_{F_1,j}^{L}
+$$
+- pour la cellule de bord droite $C_{n_c-1}$:
+$$
+\Phi_{\partial C_{n_c-1},j}=\Phi_{F_{n_c-1},j}^{R}
 $$
 
-pour $j=0$ et $j=1$.
+**Assertions:** 
 
-## Résumé rapide
+- **Cellules intérieures:** Soit $k\in\{1,\dots,n_c-2\}$ un indice de cellule intérieure, alors:
 
-- `assemble_volume_terms`: valide la partie volumique locale (formes + valeurs attendues de la bilinéaire, contrôle du linéaire).
-- `assemble_flux_term`: valide la partie flux locale sur faces internes (formes + signes + valeur analytique constante).
-- `assemble_scheme`: valide la combinaison des deux au niveau du résidu global (intérieur et bords). -->
+  - `res_grid[k,0,0]` $\approx -f(\bar x_k)\,h$
+
+    $\longrightarrow$ pour $j=0$, la partie bilinéaire est nulle ($\nabla\varphi_{k,0}=0$), et les flux internes se compensent, donc il reste essentiellement `-l[k,0,0]` (que l'on a vérifié être proche de $-f(\bar x_k)\,h$).
+
+  - `res_grid[k,1,0]` $\approx h$
+
+    $\longrightarrow$ pour $j=1$, la partie volumique vaut approximativement $h$ et, à nouveau, les contributions de flux internes s'annulent deux à deux.
+    Plus précisément, on a $res\_grid[k,1,0]\approx h-l[k,1,0]$ avec
+    $l[k,1,0]=\int_{C_k} f(x)(x-\bar x_k)\,dx=O(h^3)$ (symétrie locale autour de $\bar x_k$), donc la partie linéaire est très petite et la valeur reste proche de $h$.
+
+- **Cellules de bords:**
+
+  - `res_grid[0,0,0]` $\approx -f(\bar x_0)\,h + 1$
+  - `res_grid[0,1,0]` $\approx h + 1$
+  - `res_grid[-1,0,0]` $\approx -f(\bar x_{n_c-1})\,h - 1$
+  - `res_grid[-1,1,0]` $\approx h - 1$
+
+  Interprétation:
+
+  - au bord gauche, le résidu reçoit un décalage net $+1$ (provenant de la contribution de flux $\Phi_{F_1,j}^{L}$);
+  - au bord droit, le résidu reçoit un décalage net $-1$ (provenant de la contribution de flux $\Phi_{F_{n_c-1},j}^{R}$);
