@@ -1,4 +1,4 @@
-# Tests DG expliqués (dans l'ordre)
+# Explications - Exemples DG
 
 Ce document résume les vérifications mathématiques réalisées dans les trois scripts:
 
