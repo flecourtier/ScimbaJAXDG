@@ -67,52 +67,54 @@ $$\underbrace{\int_{C_k} \nabla u_h(x) \nabla\varphi_{k,j}(x)\,dx}_{b[k,j,0]} = 
 
   $\longrightarrow$ la partie linéaire doit approcher la moyenne de $f$ sur la cellule, qui est proche de la valeur de $f$ au centre pour une fonction lisse.
 
-<!-- ## 2) `assemble_flux_term`
+## 2) `assemble_flux_term`
 
 Objectif: vérifier les contributions de flux numérique DG sur les faces internes.
 
-## Vérifications de structure
+Le script appelle `assembly_local_flux_term(idf, j)`, puis vectorise avec `vmap` + `jit` pour obtenir:
 
-- Même contrôles de formes pour $x$, $w$, $u$.
-- Assemblage vectorisé de `assembly_local_flux_term(idf, j)` pour toutes les faces internes et tous les indices de base.
-- Vérification des formes de sortie:
-  - `idxL`, `idxR`: $(n_f-2, n_b)$
-  - `fluxL`, `fluxR`: $(n_f-2, n_b, n_u)$
+- `idxL`, `idxR` de shape $(n_f-2, n_b)$ (indices des cellules gauche/droite associées à chaque face interne);
+- `fluxL`, `fluxR` de shape $(n_f-2, n_b, n_u)$ (contributions de flux à injecter dans les résidus locaux gauche/droite).
 
-## Test mathématique principal (valeur exacte du flux)
+Dans cet exemple, on considère un flux numérique centré(`CenteredFlux`) héritant de la classe `AbstractFlux`.
 
-Avec `CenteredFlux`:
+La contribution de flux localement assemblée sur une face interne $F_l$ repose donc sur un flux numérique centré:
 
 $$
-\hat f = -\frac12\,(u_L+u_R)
+\mathcal F(u_h^L,u_h^R) = -\frac12\left(u_h^L+u_h^R\right),
 $$
 
-et, pour la solution reconstruite avec `dof=1`:
+où $u_h^L$ (resp. $u_h^R$) est la solution reconstruite à gauche (resp. à droite) de la face $F_l$.
+
+Ainsi, sur une face interne $F_l$, on a:
 
 $$
-u_L = 1 + \frac{0.5}{n_c},\qquad
-u_R = 1 - \frac{0.5}{n_c}
+u_h^L = 1 + \frac{0.5}{n_c},\qquad
+u_h^R = 1 - \frac{0.5}{n_c},
 $$
 
-d'où:
+et
 
 $$
-\hat f=-1.
+\mathcal F=-1.
 $$
 
-Avec la convention de signe du code:
+Avec la convention de signe utilisée dans le code:
 
-- `fluxL = -summed_flux = +1`
-- `fluxR =  summed_flux = -1`
+- `fluxL = -summed_flux = +1`;
+- `fluxR =  summed_flux = -1`.
 
-Assertions:
+**Assertions:**
 
-- `fluxL[:,:,0] == 1` (à tolérance numérique près)
-- `fluxR[:,:,0] == -1` (à tolérance numérique près)
+- `fluxL[:,:,0] \approx 1`
 
-Ce test valide les signes gauche/droite et la formule de flux sur toutes les faces internes.
+  $\longrightarrow$ la contribution côté gauche est constante et positive sur toutes les faces internes.
 
-## 3) `assemble_scheme`
+- `fluxR[:,:,0] \approx -1`
+
+  $\longrightarrow$ la contribution côté droit est constante et opposée, ce qui valide la cohérence d'orientation gauche/droite.
+
+<!-- ## 3) `assemble_scheme`
 
 Objectif: vérifier l'assemblage complet du résidu DG (volume + flux).
 
