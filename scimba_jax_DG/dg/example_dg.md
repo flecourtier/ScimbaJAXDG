@@ -39,7 +39,7 @@ $$
 u_h(x) = (1 + x-\bar{x_{k}}) \mathbb{1}_{\{x\in C_k\}}
 $$
 
-## 1) `assemble_volume_terms`
+## 1) Termes de volume : `assemble_volume_terms`
 
 Objectif: vérifier les termes volumiques (bilinéaire et linéaire) cellule par cellule.
 
@@ -67,7 +67,7 @@ $$\underbrace{\int_{C_k} \nabla u_h(x) \nabla\varphi_{k,j}(x)\,dx}_{b[k,j,0]} = 
 
   $\longrightarrow$ la partie linéaire doit approcher la moyenne de $f$ sur la cellule, qui est proche de la valeur de $f$ au centre pour une fonction lisse.
 
-## 2) `assemble_flux_term`
+## 2) Termes de flux : 
 
 Objectif: vérifier les contributions de flux numérique DG sur les faces internes.
 
@@ -76,7 +76,19 @@ Le script appelle `assembly_local_flux_term(idf, j)`, puis vectorise avec `vmap`
 - `idxL`, `idxR` de shape $(n_f-2, n_b)$ (indices des cellules gauche/droite associées à chaque face interne);
 - `fluxL`, `fluxR` de shape $(n_f-2, n_b, n_u)$ (contributions de flux à injecter dans les résidus locaux gauche/droite).
 
-Dans cet exemple, on considère un flux numérique centré(`CenteredFlux`) héritant de la classe `AbstractFlux`.
+**Notation:** On introduit alors la notation locale de contribution de flux sur une face interne $F_l$:
+
+$$
+\Phi_{F_l,j}^{L} \quad \text{et} \quad \Phi_{F_l,j}^{R},
+$$
+
+où $\Phi_{F_l,j}^{L}=$`fluxL[l,j,0]` (resp. $\Phi_{F_l,j}^{R}=$`fluxR[l,j,0]`) correspond à la contribution de flux à injecter dans le résidu local de la cellule à gauche (resp. à droite) de $F_l$ pour la fonction de base d'indice $j$.
+
+Autrement dit, `fluxL` et `fluxR` sont les tenseurs qui empilent ces contributions pour tous les indices $(l,j)$.
+
+### a) `assemble_centered_flux_term`
+
+Dans cet exemple, on considère un flux numérique centré (`CenteredFlux`) héritant de la classe `AbstractFlux`.
 
 La contribution de flux localement assemblée sur une face interne $F_l$ repose donc sur un flux numérique centré:
 
@@ -99,10 +111,18 @@ $$
 \mathcal F=-1.
 $$
 
-Avec la convention de signe utilisée dans le code:
+Ainsi, la contribution de flux à injecter dans les résidus locaux gauche/droite est constante et opposée:
 
-- `fluxL = -summed_flux = +1`;
-- `fluxR =  summed_flux = -1`.
+$$
+\Phi_{F_l,j}^{L}:=-\mathcal F(u_h^L,u_h^R),
+\qquad
+\Phi_{F_l,j}^{R}:=+\mathcal F(u_h^L,u_h^R),
+$$
+
+et
+
+- `fluxL = +1`;
+- `fluxR = -1`.
 
 **Assertions:**
 
@@ -114,17 +134,63 @@ Avec la convention de signe utilisée dans le code:
 
   $\longrightarrow$ la contribution côté droit est constante et opposée, ce qui valide la cohérence d'orientation gauche/droite.
 
-**Notation:** On introduit alors la notation locale de contribution de flux sur une face interne $F_l$:
+### b) `assemble_SIPG_flux_term`
+
+Dans cet exemple, on considère un flux SIPG (`SIPGFlux`) avec paramètre de pénalité $\sigma$ et taille de maille $h=1/n_c$.
+
+Le flux SIPG sur une face interne $F_l$ s'écrit séparément pour les côtés gauche et droit. En notant $\{\nabla u_h\} = \frac12(\nabla u_h^L + \nabla u_h^R)$ la moyenne des gradients et $[u_h]_{n_L} = u_h^L - u_h^R$ le saut orienté selon $n_L$, les contributions au résidu local sont:
 
 $$
-\Phi_{F_l,j}^{L}:=-\mathcal F(u_h^L,u_h^R),
-\qquad
-\Phi_{F_l,j}^{R}:=+\mathcal F(u_h^L,u_h^R),
+\Phi_{F_l,j}^{L} = -\{\nabla u_h\} \cdot n_L \;\varphi_{k_L,j} - \frac12 \nabla\varphi_{k_L,j}\cdot n_L\;[u_h]_{n_L} + \frac{\sigma}{h}[u_h]_{n_L}\;\varphi_{k_L,j},
 $$
 
-où $\Phi_{F_l,j}^{L}=$`fluxL[l,j,0]` (resp. $\Phi_{F_l,j}^{R}=$`fluxR[l,j,0]`) correspond à la contribution de flux à injecter dans le résidu local de la cellule à gauche (resp. à droite) de $F_l$ pour la fonction de base d'indice $j$.
+$$
+\Phi_{F_l,j}^{R} = -\{\nabla u_h\} \cdot n_R \;\varphi_{k_R,j} - \frac12 \nabla\varphi_{k_R,j}\cdot n_R\;[u_h]_{n_R} + \frac{\sigma}{h}[u_h]_{n_R}\;\varphi_{k_R,j},
+$$
 
-Autrement dit, `fluxL` et `fluxR` sont les tenseurs qui empilent ces contributions pour tous les indices $(l,j)$.
+avec $n_L=+1$, $n_R=-1$, $[u_h]_{n_R}=-[u_h]_{n_L}$.
+
+Avec `dofsl = 1` et la base de Taylor, $\nabla u_h = 1$ sur chaque cellule, donc:
+
+$$
+\{\!\{\nabla u_h\}\!\} = 1,\qquad [u_h]_{n_L} = u_h^L - u_h^R = \frac{1}{n_c} = h.
+$$
+
+**Pour $j=0$** ($\varphi_{k,0}=1$, $\nabla\varphi_{k,0}=0$):
+
+$$
+\Phi_{F_l,0}^{L} = -1 \cdot 1 - 0 + \frac{\sigma}{h}\cdot h \cdot 1 = \sigma - 1,
+$$
+
+$$
+\Phi_{F_l,0}^{R} = 1 \cdot 1 - 0 - \frac{\sigma}{h}\cdot h \cdot 1 = 1 - \sigma.
+$$
+
+**Pour $j=1$** ($\varphi_{k,1}=x-\bar x_k$, $\nabla\varphi_{k,1}=1$): en évaluant à la face $x_f$,
+
+$$
+\varphi_{k_L,1}(x_f) = x_f - \bar x_{k_L} = \frac{h}{2},\qquad \varphi_{k_R,1}(x_f) = x_f - \bar x_{k_R} = -\frac{h}{2},
+$$
+
+$$
+\Phi_{F_l,1}^{L} = -1\cdot\frac{h}{2} - \frac12\cdot 1\cdot h + \frac{\sigma}{h}\cdot h\cdot\frac{h}{2} = h\!\left(\frac{\sigma}{2}-1\right),
+$$
+
+$$
+\Phi_{F_l,1}^{R} = 1\cdot\left(-\frac{h}{2}\right) - \frac12\cdot(-1)\cdot(-h) + \frac{\sigma}{h}\cdot(-h)\cdot\left(-\frac{h}{2}\right) = h\!\left(\frac{\sigma}{2}-1\right).
+$$
+
+**Assertions** (pour $\sigma=4$, $h=0.01$):
+
+- `fluxL[:,0,0]` $\approx \sigma - 1 = 3$
+
+  $\longrightarrow$ la contribution côté gauche pour $j=0$ est uniforme et vaut $\sigma-1$ sur toutes les faces internes.
+
+- `fluxR[:,0,0]` $\approx 1 - \sigma = -3$
+
+  $\longrightarrow$ la contribution côté droit est l'opposée, ce qui reflète l'antisymétrie du saut.
+
+> **Note numérique:** Dans le code, $u_h^L$ et $u_h^R$ sont évalués en $x_f \pm \varepsilon$ avec $\varepsilon=10^{-6}$, ce qui introduit une erreur $2\sigma n_c \varepsilon = 0.0008$ sur le terme de pénalité. Les assertions utilisent donc `atol=1e-3`.
 
 ## 3) `assemble_scheme`
 
