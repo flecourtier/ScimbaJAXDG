@@ -15,7 +15,7 @@ Les scripts `assemble_volume_terms_system` et `assemble_volume_terms_learnable_s
 - $n_f=n_c+1$ : nombre de faces (internes + bords)
 - $h=1/n_c$ : taille de cellule
 - $n_{\text{quad}}=3$ : nombre de points de quadrature
-- $n_b=2$ : nombre de fonctions de base locales (ordre 2)
+- $n_b=2$ : nombre de fonctions de base locales (ordre du polynöme + 1)
 - $n_u=1$ : nombre de variables (`out_dim`)
 - $\varphi_{k,i}$ : $i$-ème fonction de base de Taylor dans la cellule $k$
 - $f$ : terme source analytique
@@ -41,7 +41,7 @@ $$
 
 ## 1) Termes de volume : `assemble_volume_terms`
 
-Objectif: vérifier les termes volumiques (bilinéaire et linéaire) cellule par cellule.
+*Objectif: vérifier les termes volumiques (bilinéaire et linéaire) cellule par cellule.*
 
 Le script appelle `assembly_local_volume_terms(idx, j)`, puis vectorise avec `vmap` + `jit` pour obtenir la contribution bilinéaire `b_integrals` de shape $(n_c, n_b, n_u)$ et la contribution linéaire `l_integrals` de shape $(n_c, n_b, n_u)$. 
 
@@ -69,14 +69,22 @@ $$\underbrace{\int_{C_k} \nabla u_h(x) \nabla\varphi_{k,j}(x)\,dx}_{b[k,j,0]} = 
 
 ## 2) Termes de flux : 
 
-Objectif: vérifier les contributions de flux numérique DG sur les faces internes.
+*Objectif: vérifier les contributions de flux numérique DG sur les faces internes.*
 
-Le script appelle `assembly_local_flux_term(idf, j)`, puis vectorise avec `vmap` + `jit` pour obtenir:
+*Note: On s'intéresse ici uniquement aux faces internes, les contributions de flux sur les faces de bord sont traitées séparément dans le code.*
+
+
+Le script appelle `assembly_local_flux_term(dofsl, g)` où `g` est l'indice global définit par $l*n_b+j$ (avec $l$ l'indice de la face interne et $j$ l'indice de la fonction de base). On vectorise avec `vmap` + `jit` pour obtenir:
 
 - `idxL`, `idxR` de shape $(n_f-2, n_b)$ (indices des cellules gauche/droite associées à chaque face interne);
 - `fluxL`, `fluxR` de shape $(n_f-2, n_b, n_u)$ (contributions de flux à injecter dans les résidus locaux gauche/droite).
 
-**Notation:** On introduit alors la notation locale de contribution de flux sur une face interne $F_l$:
+Chaque flux numérique $\mathcal F$ (classe fille de `AbstractFlux`) est alors calculé à partir du `__call__` qui prend en entrée :
+
+- `varL` = `uL`, `vL`, `graduL`, `gradvL`, `nL`, `fieldsL`
+- `varR` = `uR`, `vR`, `graduR`, `gradvR`, `nR`, `fieldsR`
+
+**Notation:** On introduit la notation locale de contribution de flux sur une face interne $F_l$:
 
 $$
 \Phi_{F_l,j}^{L} \quad \text{et} \quad \Phi_{F_l,j}^{R},
@@ -136,51 +144,67 @@ et
 
 ### b) `assemble_SIPG_flux_term`
 
-TODO
-
-<!--
 Dans cet exemple, on considère un flux SIPG (`SIPGFlux`) avec paramètre de pénalité $\sigma$ et taille de maille $h=1/n_c$.
 
-Le flux SIPG sur une face interne $F_l$ s'écrit séparément pour les côtés gauche et droit. En notant $\{\nabla u_h\} = \frac12(\nabla u_h^L + \nabla u_h^R)$ la moyenne des gradients et $[u_h]_{n_L} = u_h^L - u_h^R$ le saut orienté selon $n_L$, les contributions au résidu local sont:
+Pour une face interne $F_l$, on simplifit les notations en définissant ses cellules de gauche et de droite respectives par $C_L := C_{l-1}$ et $C_R := C_l$. La normale $n_L$ est orientée vers la droite ($n_L=+1$) et $n_R$ vers la gauche ($n_R=-1$).
+
+Notons $\{u_h\} = \frac12(u_h^L + u_h^R)$ l'opérateur de moyenne et $[u_h] = u_h^L n_L + u_h^R n_R = u_h^L - u_h^R$ le saut orienté, le flux SIPG s'écrit:
 
 $$
-\Phi_{F_l,j}^{L} = -\{\nabla u_h\} \cdot n_L \;\varphi_{k_L,j} - \frac12 \nabla\varphi_{k_L,j}\cdot n_L\;[u_h]_{n_L} + \frac{\sigma}{h}[u_h]_{n_L}\;\varphi_{k_L,j},
+\mathcal F((u_h^L,v_h^L),(u_h^R,v_h^R)) = -[u_h]\cdot\{\nabla v_h\} - \{\nabla u_h\}\cdot[v_h] + \frac{\sigma}{h}[u_h]\cdot[v_h].
+$$
+
+Ainsi, les contributions au résidu local de la cellule de gauche $C_L$ et de la cellule de droite $C_R$ sont respectivement:
+<!-- 
+$$
+\Phi_{F_l,j}^{L} = - \frac12 [u_h]\cdot \nabla v_h^L -\{\nabla u_h\} \cdot v_h^L + \frac{\sigma}{h}[u_h]v_h^L,
 $$
 
 $$
-\Phi_{F_l,j}^{R} = -\{\nabla u_h\} \cdot n_R \;\varphi_{k_R,j} - \frac12 \nabla\varphi_{k_R,j}\cdot n_R\;[u_h]_{n_R} + \frac{\sigma}{h}[u_h]_{n_R}\;\varphi_{k_R,j},
-$$
-
-avec $n_L=+1$, $n_R=-1$, $[u_h]_{n_R}=-[u_h]_{n_L}$.
-
-Avec `dofsl = 1` et la base de Taylor, $\nabla u_h = 1$ sur chaque cellule, donc:
+\Phi_{F_l,j}^{R} = - \frac12 [u_h]\cdot \nabla v_h^R +\{\nabla u_h\} \cdot v_h^R - \frac{\sigma}{h}[u_h]v_h^R,
+$$ -->
 
 $$
-\{\nabla u_h\} = 1,\qquad [u_h]_{n_L} = u_h^L - u_h^R = \frac{1}{n_c} = h.
+\Phi_{F_l,j}^{L} = - \frac12 [u_h]\cdot \nabla \varphi_{k_L,j} -\{\nabla u_h\} \cdot \varphi_{k_L,j} + \frac{\sigma}{h}[u_h]\varphi_{k_L,j},
+$$
+
+$$
+\Phi_{F_l,j}^{R} = - \frac12 [u_h]\cdot \nabla \varphi_{k_R,j} +\{\nabla u_h\} \cdot \varphi_{k_R,j} - \frac{\sigma}{h}[u_h]\varphi_{k_R,j},
+$$
+
+avec $k_L=l-1$ et $k_R=l$ les indices des cellules gauche/droite de la face interne $F_l$.
+
+Avec `dofsl = 1` et la base de Taylor, on a :
+$$
+\{\nabla u_h\} = 1,\qquad [u_h] = u_h^L - u_h^R = \frac{1}{n_c} = h.
 $$
 
 **Pour $j=0$** ($\varphi_{k,0}=1$, $\nabla\varphi_{k,0}=0$):
 
 $$
-\Phi_{F_l,0}^{L} = -1 \cdot 1 - 0 + \frac{\sigma}{h}\cdot h \cdot 1 = \sigma - 1,
+\Phi_{F_l,0}^{L} = - 0 - 1 \cdot 1 + \frac{\sigma}{h}\cdot h \cdot 1 = \sigma - 1,
 $$
 
 $$
-\Phi_{F_l,0}^{R} = 1 \cdot 1 - 0 - \frac{\sigma}{h}\cdot h \cdot 1 = 1 - \sigma.
+\Phi_{F_l,0}^{R} = - 0 + 1 \cdot 1 - \frac{\sigma}{h}\cdot h \cdot 1 = 1 - \sigma.
 $$
 
-**Pour $j=1$** ($\varphi_{k,1}=x-\bar x_k$, $\nabla\varphi_{k,1}=1$): en évaluant à la face $x_f$,
+**Pour $j=1$** ($\varphi_{k,1}=x-\bar x_k$, $\nabla\varphi_{k,1}=1$): 
+
+En considérant $x_f$ le point situé sur la face interne $F_l$, on a :
 
 $$
 \varphi_{k_L,1}(x_f) = x_f - \bar x_{k_L} = \frac{h}{2},\qquad \varphi_{k_R,1}(x_f) = x_f - \bar x_{k_R} = -\frac{h}{2},
 $$
 
+donc,
+
 $$
-\Phi_{F_l,1}^{L} = -1\cdot\frac{h}{2} - \frac12\cdot 1\cdot h + \frac{\sigma}{h}\cdot h\cdot\frac{h}{2} = h\!\left(\frac{\sigma}{2}-1\right),
+\Phi_{F_l,1}^{L} = - \frac12\cdot h\cdot 1 - 1\cdot\frac{h}{2} + \frac{\sigma}{h}\cdot h\cdot\frac{h}{2} = h\!\left(\frac{\sigma}{2}-1\right),
 $$
 
 $$
-\Phi_{F_l,1}^{R} = 1\cdot\left(-\frac{h}{2}\right) - \frac12\cdot(-1)\cdot(-h) + \frac{\sigma}{h}\cdot(-h)\cdot\left(-\frac{h}{2}\right) = h\!\left(\frac{\sigma}{2}-1\right).
+\Phi_{F_l,1}^{R} = - \frac12\cdot h\cdot 1 + 1\cdot\left(-\frac{h}{2}\right) - \frac{\sigma}{h}\cdot h\cdot\left(-\frac{h}{2}\right) = h\!\left(\frac{\sigma}{2}-1\right).
 $$
 
 **Assertions** (pour $\sigma=4$, $h=0.01$):
@@ -193,7 +217,7 @@ $$
 
   $\longrightarrow$ la contribution côté droit est l'opposée, ce qui reflète l'antisymétrie du saut.
 
-> **Note numérique:** Dans le code, $u_h^L$ et $u_h^R$ sont évalués en $x_f \pm \varepsilon$ avec $\varepsilon=10^{-6}$, ce qui introduit une erreur $2\sigma n_c \varepsilon = 0.0008$ sur le terme de pénalité. Les assertions utilisent donc `atol=1e-3`. -->
+> **Note numérique:** Dans le code, $u_h^L$ et $u_h^R$ sont évalués en $x_f \pm \varepsilon$ avec $\varepsilon=10^{-6}$, ce qui introduit une erreur $2\sigma n_c \varepsilon = 0.0008$ sur le terme de pénalité. Les assertions utilisent donc `atol=1e-3`.
 
 ## 3) `assemble_scheme`
 
