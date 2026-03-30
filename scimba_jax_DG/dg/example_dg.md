@@ -136,6 +136,9 @@ et
 
 ### b) `assemble_SIPG_flux_term`
 
+TODO
+
+<!--
 Dans cet exemple, on considère un flux SIPG (`SIPGFlux`) avec paramètre de pénalité $\sigma$ et taille de maille $h=1/n_c$.
 
 Le flux SIPG sur une face interne $F_l$ s'écrit séparément pour les côtés gauche et droit. En notant $\{\nabla u_h\} = \frac12(\nabla u_h^L + \nabla u_h^R)$ la moyenne des gradients et $[u_h]_{n_L} = u_h^L - u_h^R$ le saut orienté selon $n_L$, les contributions au résidu local sont:
@@ -153,7 +156,7 @@ avec $n_L=+1$, $n_R=-1$, $[u_h]_{n_R}=-[u_h]_{n_L}$.
 Avec `dofsl = 1` et la base de Taylor, $\nabla u_h = 1$ sur chaque cellule, donc:
 
 $$
-\{\!\{\nabla u_h\}\!\} = 1,\qquad [u_h]_{n_L} = u_h^L - u_h^R = \frac{1}{n_c} = h.
+\{\nabla u_h\} = 1,\qquad [u_h]_{n_L} = u_h^L - u_h^R = \frac{1}{n_c} = h.
 $$
 
 **Pour $j=0$** ($\varphi_{k,0}=1$, $\nabla\varphi_{k,0}=0$):
@@ -190,7 +193,7 @@ $$
 
   $\longrightarrow$ la contribution côté droit est l'opposée, ce qui reflète l'antisymétrie du saut.
 
-> **Note numérique:** Dans le code, $u_h^L$ et $u_h^R$ sont évalués en $x_f \pm \varepsilon$ avec $\varepsilon=10^{-6}$, ce qui introduit une erreur $2\sigma n_c \varepsilon = 0.0008$ sur le terme de pénalité. Les assertions utilisent donc `atol=1e-3`.
+> **Note numérique:** Dans le code, $u_h^L$ et $u_h^R$ sont évalués en $x_f \pm \varepsilon$ avec $\varepsilon=10^{-6}$, ce qui introduit une erreur $2\sigma n_c \varepsilon = 0.0008$ sur le terme de pénalité. Les assertions utilisent donc `atol=1e-3`. -->
 
 ## 3) `assemble_scheme`
 
