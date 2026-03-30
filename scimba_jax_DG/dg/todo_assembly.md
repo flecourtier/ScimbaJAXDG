@@ -1,4 +1,4 @@
-# <span style="color:blue"><b>TODO :</b></span> Classe `EllipticDGscheme`
+# <span style="color:blue"><b>TODO :</b></span> Classe `EllipticDGscheme` - assemblage
 
 ## **Notations**
 
