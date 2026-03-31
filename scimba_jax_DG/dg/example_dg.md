@@ -155,14 +155,6 @@ $$
 $$
 
 Ainsi, les contributions au résidu local de la cellule de gauche $C_L$ et de la cellule de droite $C_R$ sont respectivement:
-<!-- 
-$$
-\Phi_{F_l,j}^{L} = - \frac12 [u_h]\cdot \nabla v_h^L -\{\nabla u_h\} \cdot v_h^L + \frac{\sigma}{h}[u_h]v_h^L,
-$$
-
-$$
-\Phi_{F_l,j}^{R} = - \frac12 [u_h]\cdot \nabla v_h^R +\{\nabla u_h\} \cdot v_h^R - \frac{\sigma}{h}[u_h]v_h^R,
-$$ -->
 
 $$
 \Phi_{F_l,j}^{L} = - \frac12 [u_h]\cdot \nabla \varphi_{k_L,j} -\{\nabla u_h\} \cdot \varphi_{k_L,j} + \frac{\sigma}{h}[u_h]\varphi_{k_L,j},
