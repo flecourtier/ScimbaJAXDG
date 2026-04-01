@@ -1,6 +1,6 @@
 # Explications - Solve Laplacian
 
-Référence : [Unified Analysis of Discontinuous Galerkin Methods for Elliptic Problems. Douglas N. Arnold, Franco Brezzi, Bernardo Cockburn, and L. Donatella Marini](https://www-users.cse.umn.edu/~arnold/papers/dgerr.pdf)
+Référence pour les formulations : [Unified Analysis of Discontinuous Galerkin Methods for Elliptic Problems. Douglas N. Arnold, Franco Brezzi, Bernardo Cockburn, and L. Donatella Marini](https://www-users.cse.umn.edu/~arnold/papers/dgerr.pdf)
 
 ## Formulation primale
 
@@ -194,3 +194,5 @@ Sous les hypothèses de régularité $u \in H^{p+1}(\Omega)$, SIPG atteint les t
 |---|---|
 | $\|\cdot\|_{1,h}$ (énergie) | $\mathcal{O}(h^p)$ |
 | $\|\cdot\|_{L^2(\Omega)}$ | $\mathcal{O}(h^{p+1})$ |
+
+## Implémentation

@@ -1,9 +1,9 @@
 # Explications - Exemples DG
 
-Ce document résume les vérifications mathématiques réalisées dans les trois scripts:
+Ce document résume les vérifications mathématiques réalisées dans les quatres scripts:
 
 1. `assemble_volume_terms`
-2. `assemble_flux_term`
+2. `assemble_centered_flux_term` + `assemble_laplacian_SIPG_flux_term`
 3. `assemble_scheme`
 
 Les scripts `assemble_volume_terms_system` et `assemble_volume_terms_learnable_source`, qui traitent des cas système ($n_u>1$) et source learnable, sont similaires à `assemble_volume_terms` et ne sont pas décrits en détail ici, mais les mêmes types de vérifications y sont effectués.
@@ -43,7 +43,7 @@ $$
 
 *Objectif: vérifier les termes volumiques (bilinéaire et linéaire) cellule par cellule.*
 
-Le script appelle `assembly_local_volume_terms(idx, j)`, puis vectorise avec `vmap` + `jit` pour obtenir la contribution bilinéaire `b_integrals` de shape $(n_c, n_b, n_u)$ et la contribution linéaire `l_integrals` de shape $(n_c, n_b, n_u)$. 
+Le script appelle `assembly_local_volume_terms(dofsl, g)` où `g` est l'indice global définit par $k*n_b+j$ (avec $k$ l'indice de la cellule et $j$ l'indice de la fonction de base). On vectorise avec `vmap` + `jit` pour obtenir la contribution bilinéaire `b_integrals` de shape $(n_c, n_b, n_u)$ et la contribution linéaire `l_integrals` de shape $(n_c, n_b, n_u)$. 
 
 La formulation faible locale dans la cellule $C_k$ est:
 
@@ -71,7 +71,7 @@ $$\underbrace{\int_{C_k} \nabla u_h(x) \nabla\varphi_{k,j}(x)\,dx}_{b[k,j,0]} = 
 
 *Objectif: vérifier les contributions de flux numérique DG sur les faces internes.*
 
-*Note: On s'intéresse ici uniquement aux faces internes, les contributions de flux sur les faces de bord sont traitées séparément dans le code.*
+*Note: On s'intéresse ici uniquement aux faces internes, les contributions de flux sur les faces de bord sont exclus dans ces exemples.*
 
 
 Le script appelle `assembly_local_flux_term(dofsl, g)` où `g` est l'indice global définit par $l*n_b+j$ (avec $l$ l'indice de la face interne et $j$ l'indice de la fonction de base). On vectorise avec `vmap` + `jit` pour obtenir:
@@ -142,7 +142,7 @@ et
 
   $\longrightarrow$ la contribution côté droit est constante et opposée, ce qui valide la cohérence d'orientation gauche/droite.
 
-### b) `assemble_SIPG_flux_term`
+### b) `assemble_laplacian_SIPG_flux_term`
 
 Dans cet exemple, on considère un flux SIPG (`SIPGFlux`) avec paramètre de pénalité $\sigma$ et taille de maille $h=1/n_c$.
 
