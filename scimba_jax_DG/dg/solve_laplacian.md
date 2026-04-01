@@ -8,7 +8,7 @@ Référence : [Unified Analysis of Discontinuous Galerkin Methods for Elliptic P
 
 On considère le problème de Poisson avec conditions de Dirichlet homogènes :
 
-$$-\Delta u = f \text{ dans } \Omega, \qquad u = 0 \text{ sur } \partial\Omega \tag{1.1}$$
+$$-\Delta u = f \text{ dans } \Omega, \qquad u = 0 \text{ sur } \partial\Omega$$
 
 où $\Omega$ est un polygone convexe et $f \in L^2(\Omega)$.
 
@@ -141,3 +141,56 @@ C'est une équation variationnelle classique : le membre de droite est le terme 
  
 
 ## Choix du flux numérique : SIPG
+
+SIPG (*Symmetric Interior Penalty Galerkin*) est l'une des méthodes DG les plus utilisées pour les problèmes elliptiques. Elle est obtenue en choisissant les flux numériques de façon à ce que la forme bilinéaire $B_h$ soit **symétrique**, **consistante**, et **stable** moyennant un paramètre de pénalité suffisamment grand.
+ 
+### Choix des flux
+ 
+Le flux scalaire $\hat{u}$ est pris comme la **moyenne** de $u_h$ aux interfaces :
+ 
+$$\hat{u} = \{u_h\} \text{ sur } \Gamma_I, \qquad \hat{u} = 0 \text{ sur } \partial\Omega$$
+ 
+Le flux vectoriel $\hat{\sigma}$ est pris comme la moyenne du gradient brisé, auquel on ajoute un **terme de pénalité** sur le saut de $u_h$ :
+ 
+$$\hat{\sigma} = \{\nabla_h u_h\} - \eta \, [\![u_h]\!] \text{ sur } \Gamma_I, \qquad \hat{\sigma} = \nabla_h u_h - \eta \, u_h \, n \text{ sur } \partial\Omega$$
+ 
+où $\eta > 0$ est le **paramètre de pénalité**, défini sur chaque interface $e$ par $\eta|_e = \eta_0 / h_e$, avec $h_e$ la taille de l'interface et $\eta_0 > 0$ une constante à choisir suffisamment grande.
+ 
+Le terme de pénalité $\eta [\![u_h]\!]$ pénalise le saut de $u_h$ aux interfaces : plus $\eta$ est grand, plus on force $u_h$ à être continue au sens faible à travers les interfaces.
+ 
+### La forme bilinéaire SIPG
+
+En injectant ces choix de flux dans la formulation primale, on obtient :
+
+$$B_h(u_h, v) := \underbrace{\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx}_{\text{diffusion brisée}} - \underbrace{\int_\Gamma \Big( \{\nabla_h u_h\} \cdot [\![v]\!] + [\![u_h]\!] \cdot \{\nabla_h v\} \Big) \, ds}_{\text{consistance + symétrie}} + \underbrace{\int_\Gamma \eta \, [\![u_h]\!] \cdot [\![v]\!] \, ds}_{\text{pénalité}}$$
+
+Le premier terme est la diffusion brisée, analogue au terme de la formulation continue. Le deuxième assure que la solution exacte satisfait bien la formulation discrète. Le troisième contrôle les sauts aux interfaces et garantit la stabilité.
+
+### Propriétés
+ 
+**Consistance.** La solution exacte $u$ satisfait $B_h(u, v) = \int_\Omega f v \, dx$ pour tout $v \in V_h$, ce qui implique l'orthogonalité de Galerkin :
+ 
+$$B_h(u - u_h, v) = 0 \qquad \forall v \in V_h$$
+ 
+Cela découle du fait que $[\![u]\!] = 0$ et $\{\nabla u\} = \nabla u$ pour la solution exacte, qui est régulière.
+ 
+**Symétrie.** La forme $B_h$ est symétrique : $B_h(u_h, v) = B_h(v, u_h)$. C'est la conséquence directe du signe $-$ devant les deux termes de consistance (un pour $u_h$, un pour $v$). Cette propriété est ce qui distingue SIPG de NIPG (*Non-symmetric* IP), où le signe du second terme est inversé.
+ 
+**Stabilité.** La méthode est stable dès que $\eta_0$ est suffisamment grand, au sens où il existe une constante $C_s > 0$ telle que :
+ 
+$$B_h(v, v) \geq C_s \, \| v \|_{1,h}^2 \qquad \forall v \in V_h$$
+ 
+où $\|v\|_{1,h}^2 = \int_\Omega |\nabla_h v|^2 \, dx + \int_\Gamma \eta \, |[\![v]\!]|^2 \, ds$ est la norme d'énergie naturelle de la méthode.
+ 
+### Paramètre de pénalité $\eta$
+ 
+Le choix $\eta|_e = \eta_0 / h_e$ est standard. En pratique, pour des polynômes de degré $p$ sur des triangles réguliers (ou sur le maillage 1D), une valeur couramment utilisée est $\eta_0 = p(p+1)$, ce qui garantit la stabilité. Une valeur trop petite de $\eta_0$ rend la forme bilinéaire indéfinie ; une valeur trop grande n'affecte pas la consistance mais peut détériorer le conditionnement du système linéaire.
+ 
+### Convergence
+ 
+Sous les hypothèses de régularité $u \in H^{p+1}(\Omega)$, SIPG atteint les taux de convergence optimaux suivants :
+ 
+| Norme | Taux de convergence |
+|---|---|
+| $\|\cdot\|_{1,h}$ (énergie) | $\mathcal{O}(h^p)$ |
+| $\|\cdot\|_{L^2(\Omega)}$ | $\mathcal{O}(h^{p+1})$ |
