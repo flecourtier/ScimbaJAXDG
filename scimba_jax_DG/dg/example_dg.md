@@ -151,7 +151,7 @@ Pour une face interne $F_l$, on simplifit les notations en définissant ses cell
 Notons $\{u_h\} = \frac12(u_h^L + u_h^R)$ l'opérateur de moyenne et $[u_h] = u_h^L n_L + u_h^R n_R = u_h^L - u_h^R$ le saut orienté, le flux SIPG s'écrit:
 
 $$
-\mathcal F((u_h^L,v_h^L),(u_h^R,v_h^R)) = -[u_h]\cdot\{\nabla v_h\} - \{\nabla u_h\}\cdot[v_h] + \frac{\sigma}{h}[u_h]\cdot[v_h].
+\mathcal F((u_h^L,v_h^L,n_L),(u_h^R,v_h^R,n_R)) = -[u_h]\cdot\{\nabla v_h\} - \{\nabla u_h\}\cdot[v_h] + \frac{\sigma}{h}[u_h]\cdot[v_h].
 $$
 
 Ainsi, les contributions au résidu local de la cellule de gauche $C_L$ et de la cellule de droite $C_R$ sont respectivement:
