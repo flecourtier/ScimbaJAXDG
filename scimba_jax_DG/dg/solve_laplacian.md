@@ -205,3 +205,46 @@ Le terme de diffusion brisée ainsi que la forme linéaire sont construits dans 
 - **Faces frontières (conditions de Dirichlet)** : `_assembly_local_boundary_flux_term_pure` prend en argument supplémentaire une fonction `dirichlet_bc` et calcule la contribution à la cellule intérieure via `flux.boundary_call`. Ces termes ne sont assemblés que si `dirichlet_bc` est fourni à `_assembly_scheme_pure`.
 
 C'est dans la classe `SIPGFlux` que le flux numérique est défini, via `__call__` pour les faces intérieures et `boundary_call` pour les faces frontières avec condition de Dirichlet.
+
+### Non-symmetric Interior Penalty Galerkin (NIPG)
+
+NIPG est une variante directe de SIPG obtenue en **inversant le signe du terme d'adjoint-consistance**. La méthode reste consistante et stable, mais perd la propriété d'adjoint-consistance, ce qui dégrade le taux de convergence en norme $L^2$.
+
+#### Choix des flux
+
+Les flux sont identiques à SIPG :
+
+$$\hat{u} = \{u_h\} \text{ sur } \Gamma_I, \qquad \hat{u} = 0 \text{ sur } \partial\Omega$$
+
+$$\hat{\sigma} = \{\nabla_h u_h\} - \eta \, [\![u_h]\!] \text{ sur } \Gamma_I, \qquad \hat{\sigma} = \nabla_h u_h - \eta \, u_h \, n \text{ sur } \partial\Omega$$
+
+#### La forme bilinéaire NIPG
+
+La seule différence avec SIPG est le signe du terme en $[\![u_h]\!] \cdot \{\nabla_h v\}$ :
+
+$$B_h(u_h, v) := \underbrace{\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx}_{\text{diffusion brisée}} - \underbrace{\int_\Gamma \{\nabla_h u_h\} \cdot [\![v]\!] \, ds}_{\text{consistance}} + \underbrace{\int_\Gamma [\![u_h]\!] \cdot \{\nabla_h v\} \, ds}_{\text{non-symétrie}} + \underbrace{\int_\Gamma \eta \, [\![u_h]\!] \cdot [\![v]\!] \, ds}_{\text{pénalité}}$$
+
+Le troisième terme (signe $+$) est exactement celui qui, dans SIPG, portait un signe $-$ et assurait la symétrie et l'adjoint-consistance.
+
+#### Propriétés
+
+- **Consistance.** La solution exacte $u$ satisfait $B_h(u, v) = \int_\Omega f v \, dx$ pour tout $v \in V_h$ : le changement de signe ne porte que sur le terme en $v$, pas sur le terme en $u_h$, donc l'orthogonalité de Galerkin est préservée.
+
+- **Non-symétrie.** La forme $B_h$ n'est plus symétrique : $B_h(u_h, v) \neq B_h(v, u_h)$ en général. C'est la conséquence directe du signe $+$ devant $[\![u_h]\!] \cdot \{\nabla_h v\}$ combiné au signe $-$ devant $\{\nabla_h u_h\} \cdot [\![v]\!]$.
+
+- **Perte d'adjoint-consistance.** Le problème adjoint $-\Delta \psi = g$ n'est pas satisfait au sens discret par la forme $B_h(\cdot, \psi)$. Cela bloque l'argument de dualité standard qui permet de gagner un ordre en $L^2$.
+
+- **Stabilité.** La méthode reste stable pour tout $\eta_0 > 0$, contrairement à SIPG qui requiert $\eta_0 > \eta^*$. En effet, la coercivité de $B_h$ tient quel que soit le signe du terme d'adjoint-consistance dès que le terme de pénalité domine.
+
+#### Convergence
+
+| Norme | Taux de convergence |
+|---|---|
+| $\|\cdot\|_{1,h}$ (énergie) | $\mathcal{O}(h^p)$ |
+| $\|\cdot\|_{L^2(\Omega)}$ | $\mathcal{O}(h^p)$ |
+
+La perte d'un ordre en $L^2$ par rapport à SIPG (qui atteint $\mathcal{O}(h^{p+1})$) est la signature directe de l'absence d'adjoint-consistance. En 1D sur maillage uniforme et pour des problèmes très réguliers, on peut observer de la superconvergence pour $p=1$ (taux effectif ≈ 2 au lieu de 1), mais le phénomène disparaît pour $p \geq 2$ : NIPG donne alors $\mathcal{O}(h^2)$ là où SIPG donne $\mathcal{O}(h^3)$.
+
+#### Implémentation
+
+L'implémentation est identique à SIPG à un signe près. On crée une nouvelle classe `NIPGFlux`.
