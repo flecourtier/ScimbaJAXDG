@@ -199,4 +199,9 @@ Sous les hypothèses de régularité $u \in H^{p+1}(\Omega)$, SIPG atteint les t
 
 #### Implémentation
 
-Le terme de diffusion brisée ainsi que la forme linéaire sont construits dans la méthode `_assembly_local_volume_terms_pure` de `EllipticDGscheme` et dépende de `edp` (forme bilinéaire et linéaire). Pour les autres termes, c'est la fonction `_assembly_local_flux_term_pure` qui s'en charge, et c'est dans la classe `SIPGFlux` que le flux numérique est défini.
+Le terme de diffusion brisée ainsi que la forme linéaire sont construits dans la méthode `_assembly_local_volume_terms_pure` de `EllipticDGscheme` et dépendent de `pde` (forme bilinéaire et linéaire). Les termes de flux sont gérés par deux méthodes distinctes :
+
+- **Faces intérieures** : `_assembly_local_interior_flux_term_pure` calcule les contributions aux deux cellules voisines `(idxL, fluxL)` et `(idxR, fluxR)` via `flux.__call__`.
+- **Faces frontières (conditions de Dirichlet)** : `_assembly_local_boundary_flux_term_pure` prend en argument supplémentaire une fonction `dirichlet_bc` et calcule la contribution à la cellule intérieure via `flux.boundary_call`. Ces termes ne sont assemblés que si `dirichlet_bc` est fourni à `_assembly_scheme_pure`.
+
+C'est dans la classe `SIPGFlux` que le flux numérique est défini, via `__call__` pour les faces intérieures et `boundary_call` pour les faces frontières avec condition de Dirichlet.
