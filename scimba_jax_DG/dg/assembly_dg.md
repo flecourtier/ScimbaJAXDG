@@ -1,4 +1,4 @@
-# Explications - Exemples DG
+# 1 Assemblage DG - Présentation des exemples
 
 Ce document résume les vérifications mathématiques réalisées dans les quatres scripts:
 
@@ -8,7 +8,7 @@ Ce document résume les vérifications mathématiques réalisées dans les quatr
 
 Les scripts `assemble_volume_terms_system` et `assemble_volume_terms_learnable_source`, qui traitent des cas système ($n_u>1$) et source learnable, sont similaires à `assemble_volume_terms` et ne sont pas décrits en détail ici, mais les mêmes types de vérifications y sont effectués.
 
-## Notations et similitudes
+## 1.1 Notations et similitudes
 
 - $d=1$ : dimension physique
 - $n_c=100$ : nombre de cellules
@@ -39,7 +39,7 @@ $$
 u_h(x) = (1 + x-\bar{x_{k}}) \mathbb{1}_{\{x\in C_k\}}
 $$
 
-## 1) Termes de volume : `assemble_volume_terms`
+## 1.2 Termes de volume : `assemble_volume_terms`
 
 *Objectif: vérifier les termes volumiques (bilinéaire et linéaire) cellule par cellule.*
 
@@ -67,7 +67,7 @@ $$\underbrace{\int_{C_k} \nabla u_h(x) \nabla\varphi_{k,j}(x)\,dx}_{b[k,j,0]} = 
 
   $\longrightarrow$ la partie linéaire doit approcher la moyenne de $f$ sur la cellule, qui est proche de la valeur de $f$ au centre pour une fonction lisse.
 
-## 2) Termes de flux : 
+## 1.3 Termes de flux : 
 
 *Objectif: vérifier les contributions de flux numérique DG sur les faces internes.*
 
@@ -94,7 +94,7 @@ où $\Phi_{F_l,j}^{L}=$`fluxL[l,j,0]` (resp. $\Phi_{F_l,j}^{R}=$`fluxR[l,j,0]`) 
 
 Autrement dit, `fluxL` et `fluxR` sont les tenseurs qui empilent ces contributions pour tous les indices $(l,j)$.
 
-### a) `assemble_centered_flux_term`
+### 1.3.1`assemble_centered_flux_term`
 
 Dans cet exemple, on considère un flux numérique centré (`CenteredFlux`) héritant de la classe `AbstractFlux`.
 
@@ -142,7 +142,7 @@ et
 
   $\longrightarrow$ la contribution côté droit est constante et opposée, ce qui valide la cohérence d'orientation gauche/droite.
 
-### b) `assemble_laplacian_SIPG_flux_term`
+### 1.3.2 `assemble_laplacian_SIPG_flux_term`
 
 Dans cet exemple, on considère un flux SIPG (`SIPGFlux`) avec paramètre de pénalité $\sigma$ et taille de maille $h=1/n_c$.
 
@@ -211,7 +211,7 @@ $$
 
 > **Note numérique:** Dans le code, $u_h^L$ et $u_h^R$ sont évalués en $x_f \pm \varepsilon$ avec $\varepsilon=10^{-6}$, ce qui introduit une erreur $2\sigma n_c \varepsilon = 0.0008$ sur le terme de pénalité. Les assertions utilisent donc `atol=1e-3`.
 
-## 3) `assemble_scheme`
+## 1.4 `assemble_scheme`
 
 Objectif: vérifier l'assemblage complet du résidu DG (volume + flux).
 

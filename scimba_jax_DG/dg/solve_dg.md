@@ -1,9 +1,9 @@
-# 1. Solve Laplacian
+# 1 Solve Laplacian
 
 Référence pour les formulations : [Unified Analysis of Discontinuous Galerkin Methods for Elliptic Problems. Douglas N. Arnold, Franco Brezzi, Bernardo Cockburn, and L. Donatella Marini](https://www-users.cse.umn.edu/~arnold/papers/dgerr.pdf)
-## 1.1. Formulation primale
+## 1.1 Formulation primale
 
-### 1.1.1. Le problème modèle
+### 1.1.1 Le problème modèle
 
 On considère le problème de Poisson avec conditions de Dirichlet homogènes :
 
@@ -11,7 +11,7 @@ $$-\Delta u = f \text{ dans } \Omega, \qquad u = 0 \text{ sur } \partial\Omega$$
 
 où $\Omega$ est un polygone convexe et $f \in L^2(\Omega)$.
 
-### 1.1.2. Reformulation en système du premier ordre
+### 1.1.2 Reformulation en système du premier ordre
 
 On introduit la variable auxiliaire $\sigma = \nabla u$, ce qui donne le système :
 
@@ -19,7 +19,7 @@ $$\sigma = \nabla u, \qquad -\nabla \cdot \sigma = f \text{ dans } \Omega, \qqua
 
 L'intérêt est de ramener le problème d'ordre 2 en un système d'ordre 1, plus facile à discrétiser avec des éléments discontinus.
 
-### 1.1.3. Formulation faible sur un élément $K$
+### 1.1.3 Formulation faible sur un élément $K$
 
 On multiplie les deux équations par des fonctions test $\tau$ et $v$, et on intègre sur un élément $K$ du maillage $\mathcal{T}_h$. En intégrant par parties :
 
@@ -27,7 +27,7 @@ $$\int_K \sigma \cdot \tau \, dx = -\int_K u \, \nabla \cdot \tau \, dx + \int_{
 
 $$\int_K \sigma \cdot \nabla v \, dx = \int_K f v \, dx + \int_{\partial K} \sigma \cdot n_K \, v \, ds$$
 
-### 1.1.4. Les espaces d'approximation $V_h$ et $\Sigma_h$
+### 1.1.4 Les espaces d'approximation $V_h$ et $\Sigma_h$
  
 On se donne un maillage $\mathcal{T}_h = \{K_k\}_{k=0}^{n_c-1}$ de $\Omega$. On note $p \geq 1$ le degré polynomial et on définit les espaces d'éléments finis **discontinus** :
  
@@ -37,7 +37,7 @@ $$\Sigma_h := \{ \tau \in [L^2(\Omega)]^2 : \tau|_K \in [\mathbb{P}_p(K)]^2 \qua
  
 où $\mathbb{P}_p(K)$ est l'espace des polynômes de degré au plus $p$ sur $K$. La différence essentielle avec les éléments finis classiques est que **les fonctions de $V_h$ et $\Sigma_h$ n'ont aucune contrainte de continuité aux interfaces** entre éléments — elles appartiennent simplement à $L^2(\Omega)$, pas à $H^1(\Omega)$.
 
-### 1.1.5. Le passage aux flux numériques
+### 1.1.5 Le passage aux flux numériques
 
 Dans une méthode DG, les fonctions $u_h \in V_h$ et $\sigma_h \in \Sigma_h$ sont **discontinues aux interfaces**. Les traces sur $\partial K$ sont donc ambiguës : il y a deux valeurs possibles de chaque côté d'une interface.
 
@@ -49,7 +49,7 @@ $$\int_K \sigma_h \cdot \nabla v \, dx = \int_K f v \, dx + \int_{\partial K} \h
 
 Le choix des flux $\hat{u}_K$ et $\hat{\sigma}_K$ en fonction de $u_h$ et $\sigma_h$ définit entièrement la méthode DG.
 
-### 1.1.6. Sommation sur tous les éléments
+### 1.1.6 Sommation sur tous les éléments
 
 On somme les formules sur tous les éléments $K \in \mathcal{T}_h$.
 
@@ -59,7 +59,7 @@ $$\int_\Omega \sigma_h \cdot \nabla_h v \, dx = \int_\Omega f v \, dx + \sum_{K\
 
 et on remarque que les sommes de bord $\sum_K \int_{\partial K}$ font apparaître chaque interface deux fois. 
 
-### 1.1.7. Définition des termes de saut et de moyenne
+### 1.1.7 Définition des termes de saut et de moyenne
 
 On définit les opérateurs de saut $[\![\cdot]\!]$ et de moyenne $\{\cdot\}$ sur les interfaces intérieures du maillage :
 
@@ -81,7 +81,7 @@ $$[\![q]\!] = q\, n \qquad \{\varphi\} = \varphi$$
 
 où $n$ est la normale sortante (du domaine).
 
-### 1.1.8. Réécriture des termes de bord avec les opérateurs de saut et de moyenne
+### 1.1.8 Réécriture des termes de bord avec les opérateurs de saut et de moyenne
 
 On réécrit alors les sommes de bord à l'aide de l'identité suivante :
 
@@ -89,7 +89,7 @@ $$\sum_{K\in\mathcal{T}_h} \int_{\partial K} q_K \, \varphi_K \cdot n_K \, ds = 
 
 où $\Gamma$ est l'union de tous les bords d'éléments (intérieurs + bords), $\Gamma_I = \Gamma \setminus \partial\Omega$ est l'ensemble des interfaces intérieures.
 
-### 1.1.9. Formulation globale après sommation
+### 1.1.9 Formulation globale après sommation
  
 Après avoir sommé sur tous les éléments et réécrit les termes de bord avec (1), on obtient deux équations globales :
  
@@ -99,7 +99,7 @@ $$\int_\Omega \sigma_h \cdot \nabla_h v \, dx - \int_\Gamma \{\hat{\sigma}\} \cd
  
 L'objectif est maintenant d'éliminer $\sigma_h$ de ce système pour obtenir une équation ne portant que sur $u_h$.
  
-### 1.1.10. Expression de $\sigma_h$ en fonction de $u_h$
+### 1.1.10 Expression de $\sigma_h$ en fonction de $u_h$
  
 Pour transformer le terme $-\int_\Omega u_h \nabla_h \cdot \tau \, dx$ dans (2), on utilise l'intégration par parties globale suivante (qui est une conséquence de l'identité (1)) :
  
@@ -117,7 +117,7 @@ Ces opérateurs relèvent une quantité définie sur les interfaces vers l'espac
  
 $$\sigma_h = \nabla_h u_h - r([\![\hat{u} - u_h]\!]) - l(\{\hat{u} - u_h\})$$
  
-### 1.1.11. La forme bilinéaire primale
+### 1.1.11 La forme bilinéaire primale
 
 Il reste à éliminer $\sigma_h$ de (3). Pour cela, on prend $\tau = \nabla_h v$ dans (4), ce qui exprime $\int_\Omega \sigma_h \cdot \nabla_h v \, dx$ en termes de $u_h$ :
  
@@ -130,7 +130,7 @@ $$+ \int_{\Gamma_I} \Big(\{\hat{u} - u_h\}[\![\nabla_h v]\!] - [\![\hat{\sigma}]
  
 C'est la **formulation primale** de la méthode DG. Toute la richesse des différentes méthodes DG réside dans le choix des flux $\hat{u}$ et $\hat{\sigma}$ : c'est ce choix qui détermine la forme concrète de $B_h$ et donc les propriétés de stabilité, consistance et précision de la méthode.
 
-### 1.1.12. Le problème discret final
+### 1.1.12 Le problème discret final
  
 On peut maintenant écrire le problème discret sous sa forme définitive. On cherche $u_h \in V_h$ tel que :
  
@@ -139,16 +139,16 @@ $$B_h(u_h, v) = \int_\Omega f \, v \, dx \qquad \forall v \in V_h$$
 C'est une équation variationnelle classique : le membre de droite est le terme source $f$ testé contre $v$, exactement comme dans la formulation faible continue. Le membre de gauche $B_h(u_h, v)$ remplace la forme bilinéaire $\int_\Omega \nabla u \cdot \nabla v \, dx$ du problème continu, en y ajoutant tous les termes d'interface qui assurent la communication entre éléments et la stabilité de la méthode.
  
 
-## 1.2. Choix du flux numérique
+## 1.2 Choix du flux numérique
 
 On s'intéresse à trois flux numériques (SIPG, NIPG et Babuska-Zlaman) dont les propriétés sont résumées dans la table ci-dessous.
 
 ![[table_flux.png]]
-### 1.2.1. Symmetric Interior Penalty Galerkin (SIPG)
+### 1.2.1 Symmetric Interior Penalty Galerkin (SIPG)
 
 SIPG est l'une des méthodes DG les plus utilisées pour les problèmes elliptiques. Elle est obtenue en choisissant les flux numériques de façon à ce que la forme bilinéaire $B_h$ soit **symétrique**, **consistante**, et **stable** moyennant un paramètre de pénalité suffisamment grand.
  
-#### 1.2.1.1. Choix des flux
+#### 1.2.1.1 Choix des flux
  
 Le flux scalaire $\hat{u}$ est pris comme la **moyenne** de $u_h$ aux interfaces :
  
@@ -162,7 +162,7 @@ où $\eta > 0$ est le **paramètre de pénalité**, défini sur chaque interface
  
 Le terme de pénalité $\eta [\![u_h]\!]$ pénalise le saut de $u_h$ aux interfaces : plus $\eta$ est grand, plus on force $u_h$ à être continue au sens faible à travers les interfaces.
  
-#### 1.2.1.2. La forme bilinéaire SIPG
+#### 1.2.1.2 La forme bilinéaire SIPG
 
 En injectant ces choix de flux dans la formulation primale, on obtient :
 
@@ -170,7 +170,7 @@ $$B_h(u_h, v) := \underbrace{\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx}_{\
 
 Le premier terme est la diffusion brisée, analogue au terme de la formulation continue. Le deuxième assure que la solution exacte satisfait bien la formulation discrète. Le troisième contrôle les sauts aux interfaces et garantit la stabilité.
 
-#### 1.2.1.3. Propriétés
+#### 1.2.1.3 Propriétés
  
 - **Consistance.** La solution exacte $u$ satisfait $B_h(u, v) = \int_\Omega f v \, dx$ pour tout $v \in V_h$, ce qui implique l'orthogonalité de Galerkin :
     
@@ -186,11 +186,11 @@ Le premier terme est la diffusion brisée, analogue au terme de la formulation c
     
     où $\|v\|_{1,h}^2 = \int_\Omega |\nabla_h v|^2 \, dx + \int_\Gamma \eta \, |[\![v]\!]|^2 \, ds$ est la norme d'énergie naturelle de la méthode.
  
-#### 1.2.1.4. Paramètre de pénalité $\eta$
+#### 1.2.1.4 Paramètre de pénalité $\eta$
  
 Le choix $\eta|_e = \eta_0 / h_e$ est standard. En pratique, pour des polynômes de degré $p$ sur des triangles réguliers (ou sur le maillage 1D), une valeur couramment utilisée est $\eta_0 = p(p+1)$, ce qui garantit la stabilité. Une valeur trop petite de $\eta_0$ rend la forme bilinéaire indéfinie ; une valeur trop grande n'affecte pas la consistance mais peut détériorer le conditionnement du système linéaire.
  
-#### 1.2.1.5. Convergence
+#### 1.2.1.5 Convergence
  
 Sous les hypothèses de régularité $u \in H^{p+1}(\Omega)$, SIPG atteint les taux de convergence optimaux suivants :
  
@@ -199,7 +199,7 @@ Sous les hypothèses de régularité $u \in H^{p+1}(\Omega)$, SIPG atteint les t
 | $\|\cdot\|_{1,h}$ (énergie) | $\mathcal{O}(h^p)$ |
 | $\|\cdot\|_{L^2(\Omega)}$ | $\mathcal{O}(h^{p+1})$ |
 
-#### 1.2.1.6. Implémentation
+#### 1.2.1.6 Implémentation
 
 Le terme de diffusion brisée ainsi que la forme linéaire sont construits dans la méthode `_assembly_local_volume_terms_pure` de `EllipticDGscheme` et dépendent de `pde` (forme bilinéaire et linéaire). Les termes de flux sont gérés par deux méthodes distinctes :
 
@@ -208,11 +208,11 @@ Le terme de diffusion brisée ainsi que la forme linéaire sont construits dans 
 
 C'est dans la classe `SIPGFlux` que le flux numérique est défini, via `__call__` pour les faces intérieures et `boundary_call` pour les faces frontières avec condition de Dirichlet.
 
-### 1.2.2. Non-symmetric Interior Penalty Galerkin (NIPG)
+### 1.2.2 Non-symmetric Interior Penalty Galerkin (NIPG)
 
 NIPG est une variante directe de SIPG obtenue en **inversant le signe du terme d'adjoint-consistance**. La méthode reste consistante et stable, mais perd la propriété d'adjoint-consistance, ce qui dégrade le taux de convergence en norme $L^2$.
 
-#### 1.2.2.1. Choix des flux
+#### 1.2.2.1 Choix des flux
 
 Les flux sont identiques à SIPG :
 
@@ -220,7 +220,7 @@ $$\hat{u} = \{u_h\} \text{ sur } \Gamma_I, \qquad \hat{u} = 0 \text{ sur } \part
 
 $$\hat{\sigma} = \{\nabla_h u_h\} - \eta \, [\![u_h]\!] \text{ sur } \Gamma_I, \qquad \hat{\sigma} = \nabla_h u_h - \eta \, u_h \, n \text{ sur } \partial\Omega$$
 
-#### 1.2.2.2. La forme bilinéaire NIPG
+#### 1.2.2.2 La forme bilinéaire NIPG
 
 La seule différence avec SIPG est le signe du terme en $[\![u_h]\!] \cdot \{\nabla_h v\}$ :
 
@@ -228,7 +228,7 @@ $$B_h(u_h, v) := \underbrace{\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx}_{\
 
 Le troisième terme (signe $+$) est exactement celui qui, dans SIPG, portait un signe $-$ et assurait la symétrie et l'adjoint-consistance.
 
-#### 1.2.2.3. Propriétés
+#### 1.2.2.3 Propriétés
 
 - **Consistance.** La solution exacte $u$ satisfait $B_h(u, v) = \int_\Omega f v \, dx$ pour tout $v \in V_h$ : le changement de signe ne porte que sur le terme en $v$, pas sur le terme en $u_h$, donc l'orthogonalité de Galerkin est préservée.
 
@@ -238,7 +238,7 @@ Le troisième terme (signe $+$) est exactement celui qui, dans SIPG, portait un 
 
 - **Stabilité.** La méthode reste stable pour tout $\eta_0 > 0$, contrairement à SIPG qui requiert $\eta_0 > \eta^*$. En effet, la coercivité de $B_h$ tient quel que soit le signe du terme d'adjoint-consistance dès que le terme de pénalité domine.
 
-#### 1.2.2.4. Convergence
+#### 1.2.2.4 Convergence
 
 | Norme | Taux de convergence |
 |---|---|
@@ -247,11 +247,11 @@ Le troisième terme (signe $+$) est exactement celui qui, dans SIPG, portait un 
 
 La perte d'un ordre en $L^2$ par rapport à SIPG (qui atteint $\mathcal{O}(h^{p+1})$) est la signature directe de l'absence d'adjoint-consistance. En 1D sur maillage uniforme et pour des problèmes très réguliers, on peut observer de la superconvergence pour $p=1$ (taux effectif ≈ 2 au lieu de 1), mais le phénomène disparaît pour $p \geq 2$ : NIPG donne alors $\mathcal{O}(h^2)$ là où SIPG donne $\mathcal{O}(h^3)$.
 
-#### 1.2.2.5. Implémentation
+#### 1.2.2.5 Implémentation
 
 L'implémentation est identique à SIPG à un signe près. On crée une nouvelle classe `NIPGFlux`.
 
-### 1.2.3. Babuska-Zlamal
+### 1.2.3 Babuska-Zlamal
 
-# 2. Solve Diffusion
+# 2 Solve Diffusion
 
