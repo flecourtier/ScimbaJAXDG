@@ -346,3 +346,30 @@ Le choix du paramètre reste le même qu'au Laplacien :
 | SIPG / NIPG | `sigma = p*(p+1)`, `h = 1/n_cells` |
 | BZ | `mu = 1/h**(2*p+1)` |
 
+# 3 Solve Diffusion/Advection
+
+Le problème considéré est :
+
+$$-\nabla \cdot (A(x) \, \nabla u) + b(x) \cdot \nabla u = f \quad \text{dans } \Omega, \qquad u = 0 \text{ sur } \partial\Omega$$
+
+*Exemple :*
+$$A(x) = (1 + x) \, I, \quad b(x) = 2 \quad \text{sur} \quad \Omega = [0, 1]$$
+$$u_\text{ex}(x) = \sin(\pi x), \quad f(x) = -\pi\cos(\pi x) + \pi^2(1+x)\sin(\pi x) + 2\pi\cos(\pi x)$$
+
+## 3.1 Forme bilinéaire et linéaire
+
+Le terme d'advection $b \cdot \nabla u$ est un terme **purement volumique** — il n'est pas intégré par parties. La forme bilinéaire de `DiffusionAdvectionWeakForm` est :
+
+$$a(u_h, v) = \int_\Omega (A \nabla_h u_h) \cdot \nabla_h v \, dx + \int_\Omega (b \cdot \nabla_h u_h) \, v \, dx$$
+
+Il suffit de passer `pde = DiffusionAdvectionWeakForm(dim=1, A=..., b=..., f=...)`. `DiffusionWeakForm` est un cas particulier avec $b = 0$.
+
+## 3.2 Flux numériques
+
+Le terme d'advection ne génère **aucun terme d'interface** (pas d'intégration par parties). Les flux SIPG/NIPG/BZ restent donc inchangés. L'advection est entièrement prise en charge par le terme de volume.
+
+**Remarque :** (<span style="color:blue"><b>TODO :</b></span> vérifier car générer par Claude) cette formulation sans stabilisation upwind aux interfaces peut produire un régime pré-asymptotique non-monotone en L² pour p=1 lorsque le nombre de Péclet $\mathrm{Pe} = b \, h / A$ n'est pas encore petit. Les taux asymptotiques restent ceux de la diffusion pure.
+
+## 3.3 Paramètre de pénalité
+
+Identique à la diffusion (section 2.3).
