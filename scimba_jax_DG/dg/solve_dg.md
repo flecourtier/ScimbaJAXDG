@@ -11,6 +11,8 @@ $$-\Delta u = f \text{ dans } \Omega, \qquad u = 0 \text{ sur } \partial\Omega$$
 
 où $\Omega$ est un polygone convexe et $f \in L^2(\Omega)$.
 
+*Exemple :* 
+$$u_\text{ex}(x) = \frac{1}{\pi^2}\sin(\pi x), \quad f(x) = \sin(\pi x)$$
 ### 1.1.2 Reformulation en système du premier ordre
 
 On introduit la variable auxiliaire $\sigma = \nabla u$, ce qui donne le système :
@@ -251,7 +253,96 @@ La perte d'un ordre en $L^2$ par rapport à SIPG (qui atteint $\mathcal{O}(h^{p+
 
 L'implémentation est identique à SIPG à un signe près. On crée une nouvelle classe `NIPGFlux`.
 
-### 1.2.3 Babuska-Zlamal
+### 1.2.3 Babuška-Zlámal (BZ)
+
+<span style="color:blue"><b>TODO :</b></span> relire cette section (générée par Claude)
+
+La méthode de Babuška-Zlámal est une **méthode de pénalité pure** : l'unique contribution d'interface est une pénalité sur le saut de $u_h$, sans aucun terme de couplage de gradient. Elle est **inconsistante** et **non adjoint-consistante**, mais l'optimalité est récupérée grâce à une **superpénalité**.
+
+#### 1.2.3.1 Choix des flux
+
+Le flux scalaire $\hat{u}$ est pris comme la **trace intérieure unilatérale** (valeur de l'élément $K$ lui-même, pas la moyenne) :
+
+$$\hat{u}_K = u_h|_K \text{ sur } \partial K$$
+
+Le flux vectoriel $\hat{\sigma}$ ne contient **aucun terme de gradient**, uniquement une pénalité sur le saut :
+
+$$\hat{\sigma} = -\mu \, [\![u_h]\!] \text{ sur } \Gamma$$
+
+où $\mu > 0$ est le **paramètre de superpénalité**, défini par $\mu = \eta \, h_e^{-(2p+1)}$ pour des polynômes de degré $p$, avec $\eta > 0$ une constante.
+
+#### 1.2.3.2 La forme bilinéaire BZ
+
+Avec ce choix de flux, les termes d'interface de la formulation primale se réduisent à la seule pénalité. La forme bilinéaire est :
+
+$$B_h(u_h, v) := \underbrace{\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx}_{\text{diffusion brisée}} + \underbrace{\int_\Gamma \mu \, [\![u_h]\!] \cdot [\![v]\!] \, ds}_{\text{superpénalité}}$$
+
+Il n'y a **aucun terme en $\{\nabla_h u_h\} \cdot [\![v]\!]$ ni en $[\![u_h]\!] \cdot \{\nabla_h v\}$** : ce sont précisément ces termes qui, dans SIPG et NIPG, assurent la consistance et/ou l'adjoint-consistance.
+
+#### 1.2.3.3 Propriétés
+
+- **Inconsistance.** La solution exacte $u$ ne satisfait **pas** $B_h(u, v) = \int_\Omega f v \, dx$ pour tout $v \in V_h$. En substituant $u$ dans la formulation, il reste un résidu de consistance :
+
+    $$B_h(u, v) = \int_\Omega f v \, dx + \int_\Gamma \{\nabla u\} \cdot [\![v]\!] \, ds$$
+
+    Ce terme résiduel ne disparaît pas, car le terme $\{\nabla_h u_h\} \cdot [\![v]\!]$ qui devrait compenser l'intégration par parties est absent.
+
+- **Non adjoint-consistance.** Par le même raisonnement appliqué au problème adjoint, la forme $B_h(\cdot, \psi)$ ne satisfait pas le problème adjoint. La méthode est donc doublement non-consistante.
+
+- **Stabilité avec superpénalité.** En choisissant $\mu = \eta \, h_e^{-(2p+1)}$, le terme de pénalité domine le résidu de consistance et la méthode devient stable. La condition $\eta > 0$ suffit (pas de seuil sur $\eta$, contrairement à SIPG).
+
+- **Symétrie.** La forme $B_h$ est **symétrique** : $B_h(u_h, v) = B_h(v, u_h)$, car seuls les termes $\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx$ et $\int_\Gamma \mu \, [\![u_h]\!] \cdot [\![v]\!] \, ds$ sont présents, et les deux sont symétriques.
+
+#### 1.2.3.4 Convergence
+
+Malgré l'inconsistance, la superpénalité permet de retrouver les taux optimaux :
+
+| Norme | Taux de convergence |
+|---|---|
+| $\|\cdot\|_{1,h}$ (énergie) | $\mathcal{O}(h^p)$ |
+| $\|\cdot\|_{L^2(\Omega)}$ | $\mathcal{O}(h^{p+1})$ |
+
+En contrepartie, la superpénalité $\mu \sim h^{-(2p+1)}$ tend à rendre la méthode **très mal conditionnée** : le nombre de condition du système linéaire croît comme $h^{-(2p+2)}$, bien plus vite que pour SIPG ou NIPG où il croît en $h^{-2}$.
+
+#### 1.2.3.5 Implémentation
+
+La classe `BabuSkaZlamalFlux` ne fait intervenir **aucun terme de gradient** dans `__call__` et `boundary_call`. Le paramètre `mu` encapsule directement la superpénalité $\mu = \eta \, h_e^{-(2p+1)}$, qui doit être calculée et passée à la construction de l'objet. Les contributions sont :
+
+- **Faces intérieures** : `fluxL = mu * jump_u * vL * nL`, `fluxR = mu * jump_u * vR * nR`, avec `jump_u = uL * nL + uR * nR`.
+- **Faces frontières** : `flux = mu * (u - g) * n * v * n`, où $g$ est la valeur de Dirichlet.
 
 # 2 Solve Diffusion [(voir)](images/solve_diffusion_compare_flux.png)
+
+Le problème considéré est :
+
+$$-\nabla \cdot (A(x) \, \nabla u) = f \quad \text{dans } \Omega, \qquad u = 0 \text{ sur } \partial\Omega$$
+
+avec $A$ la matrice de diffusion (propriétés ?). 
+
+*Exemple :* 
+$$A(x) = (1 + x) \, I \quad \text{sur} \quad \Omega = [0, 1]$$
+$$u_\text{ex}(x) = \sin(\pi x), \quad f(x) = -\pi\cos(\pi x) + \pi^2(1+x)\sin(\pi x)$$
+
+Le Laplacien est le cas particulier $A = I$. La généralisation à $A$ variable ne change **rien à la structure de la méthode DG** : les flux et la formulation primale restent identiques, à ceci près que $\nabla_h u_h$ est remplacé partout par $A \nabla_h u_h$.
+
+## 2.1 Forme bilinéaire et linéaire
+
+La forme volumique change : au lieu de $\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx$, on intègre la forme bilinéaire de `DiffusionWeakForm` :
+
+$$a(u_h, v) = \int_\Omega (A \nabla_h u_h) \cdot \nabla_h v \, dx$$
+
+Côté implémentation, il suffit de passer `pde = DiffusionWeakForm(dim=1, A=..., f=...)` à la place de `LaplacianWeakForm` : le schéma `EllipticDGscheme` lit automatiquement le champ `A` depuis `pde.fields["A"]` pour assembler le terme de volume.
+
+## 2.2 Flux numériques
+
+Les flux reçoivent `fieldsL[0]` et `fieldsR[0]` qui sont les évaluations de $A$ aux points de quadrature de la face (fournis automatiquement par le schéma). Les classes `SIPGFlux` et `NIPGFlux` utilisent déjà `AL = fieldsL[0]` et `AR = fieldsR[0]` pour pondérer les termes de gradient : `avg_A_grad_u = 0.5 * (AL @ graduL + AR @ graduR)`. **Aucune modification du flux n'est donc nécessaire** : le même objet `SIPGFlux`/`NIPGFlux`/`BabuSkaZlamalFlux` fonctionne pour la diffusion générale.
+
+## 2.3 Paramètre de pénalité
+
+Le choix du paramètre reste le même qu'au Laplacien :
+
+| Flux | Paramètre |
+|---|---|
+| SIPG / NIPG | `sigma = p*(p+1)`, `h = 1/n_cells` |
+| BZ | `mu = 1/h**(2*p+1)` |
 
