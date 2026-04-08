@@ -17,7 +17,8 @@
 - [x] Renvoyer deux flux indépendants et enlever les zeros dans le `EllipticDGscheme`.
 - [x] Rajouter un flux de bord... dans le `assembly_local_flux_terme_pure` qui ne s'occupe que des interfaces intérieures, et un flux spécial pour les bords.
 - [x] Tester 2 autres flux en plus de SIPG (regarder ref).
-- [ ] Tester avec de l'advection ($b$ non nul).
+- [x] Tester avec de l'advection ($b$ non nul).
+- [x] Ajouter de la réaction ($c$ non nul).
 - [ ] Tester avec des termes sources différents
 - [ ] Regarder les perfs : pourquoi ça mets autant de temps à tourner ?
 

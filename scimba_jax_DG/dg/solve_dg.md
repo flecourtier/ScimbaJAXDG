@@ -346,7 +346,7 @@ Le choix du paramètre reste le même qu'au Laplacien :
 | SIPG / NIPG | `sigma = p*(p+1)`, `h = 1/n_cells` |
 | BZ | `mu = 1/h**(2*p+1)` |
 
-# 3 Solve Diffusion/Advection
+# 3 Solve Diffusion/Advection [(voir)](images/solve_diffusion_advection_compare_flux.png)
 
 Le problème considéré est :
 
@@ -371,5 +371,31 @@ Le terme d'advection ne génère **aucun terme d'interface** (pas d'intégration
 **Remarque :** (<span style="color:blue"><b>TODO :</b></span> vérifier car générer par Claude) cette formulation sans stabilisation upwind aux interfaces peut produire un régime pré-asymptotique non-monotone en L² pour p=1 lorsque le nombre de Péclet $\mathrm{Pe} = b \, h / A$ n'est pas encore petit. Les taux asymptotiques restent ceux de la diffusion pure.
 
 ## 3.3 Paramètre de pénalité
+
+Identique à la diffusion (section 2.3).
+
+# 4 Solve Diffusion/Advection/Reaction [(voir)](images/solve_diffusion_advection_reaction_compare_flux.png)
+
+Le problème considéré est :
+
+$$-\nabla \cdot (A(x) \, \nabla u) + b(x) \cdot \nabla u + c(x) \, u = f \quad \text{dans } \Omega, \qquad u = 0 \text{ sur } \partial\Omega$$
+
+*Exemple :*
+$$A(x) = (1 + x) \, I, \quad b(x) = 2, \quad c(x) = 1 \quad \text{sur} \quad \Omega = [0, 1]$$
+$$u_\text{ex}(x) = \sin(\pi x), \quad f(x) = \pi^2(1+x)\sin(\pi x) - \pi\cos(\pi x) + 2\pi\cos(\pi x) + \sin(\pi x)$$
+
+## 4.1 Forme bilinéaire et linéaire
+
+Le terme de réaction $c \, u$ est également un terme **purement volumique**. La forme bilinéaire de `DiffusionAdvectionReactionWeakForm` est :
+
+$$a(u_h, v) = \int_\Omega (A \nabla_h u_h) \cdot \nabla_h v \, dx + \int_\Omega (b \cdot \nabla_h u_h) \, v \, dx + \int_\Omega c \, u_h \, v \, dx$$
+
+Il suffit de passer `pde = DiffusionAdvectionReactionWeakForm(dim=1, A=..., b=..., c=..., f=...)`. `DiffusionAdvectionWeakForm` est un cas particulier avec $c = 0$.
+
+## 4.2 Flux numériques
+
+Ni l'advection ni la réaction ne génèrent de terme d'interface. Les flux SIPG/NIPG/BZ restent donc inchangés (identiques au cas diffusion pure).
+
+## 4.3 Paramètre de pénalité
 
 Identique à la diffusion (section 2.3).
