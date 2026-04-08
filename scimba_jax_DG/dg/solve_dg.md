@@ -1,4 +1,4 @@
-# 1 Solve Laplacian
+# 1 Solve Laplacian [(voir)](images/solve_laplacian_compare_flux.png)
 
 Référence pour les formulations : [Unified Analysis of Discontinuous Galerkin Methods for Elliptic Problems. Douglas N. Arnold, Franco Brezzi, Bernardo Cockburn, and L. Donatella Marini](https://www-users.cse.umn.edu/~arnold/papers/dgerr.pdf)
 ## 1.1 Formulation primale
@@ -253,5 +253,5 @@ L'implémentation est identique à SIPG à un signe près. On crée une nouvelle
 
 ### 1.2.3 Babuska-Zlamal
 
-# 2 Solve Diffusion
+# 2 Solve Diffusion [(voir)](images/solve_diffusion_compare_flux.png)
 

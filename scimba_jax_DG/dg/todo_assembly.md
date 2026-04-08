@@ -67,6 +67,6 @@
 
     - [x] Rajouter un test sur les quadratures pour vérifier les calculs d'intégrales.
     - [x] Passer les fonctions qui dépendent de `self` en `@staticmethod`.
-    - [ ] Faire dépendre les fonctions d'assemblage (volumes et flux) de `local_dofs`.
+    - [x] Faire dépendre les fonctions d'assemblage (volumes et flux) de `local_dofs`.
     - [ ] Vérifier la documentation (en anglais) sur tous les fichiers associés au DG.
     - [ ] Rajouter un test pour vérifier les quadratures surfaciques.
