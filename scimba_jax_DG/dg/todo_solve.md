@@ -20,7 +20,7 @@
 - [x] Tester avec de l'advection ($b$ non nul).
 - [x] Ajouter de la réaction ($c$ non nul).
 - [ ] Tester avec des termes sources différents
-- [ ] Regarder les perfs : pourquoi ça mets autant de temps à tourner ?
+- [x] Regarder les perfs : pourquoi ça mets autant de temps à tourner ?
 
 ## Pour aller plus loin
 
