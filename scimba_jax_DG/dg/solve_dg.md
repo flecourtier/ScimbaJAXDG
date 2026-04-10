@@ -1,4 +1,4 @@
-# 1 Solve Laplacian [(voir)](images/solve_laplacian_compare_flux.png)
+# 1 Solve Laplacian [(voir)](images/solve_laplacian_compare_flux.png) [(voir Matrix Free)](images/solve_laplacian_compare_flux_matrix_free.png)
 
 Référence pour les formulations : [Unified Analysis of Discontinuous Galerkin Methods for Elliptic Problems. Douglas N. Arnold, Franco Brezzi, Bernardo Cockburn, and L. Donatella Marini](https://www-users.cse.umn.edu/~arnold/papers/dgerr.pdf)
 ## 1.1 Formulation primale
