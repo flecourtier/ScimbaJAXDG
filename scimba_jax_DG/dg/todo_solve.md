@@ -25,9 +25,9 @@
 ## Pour aller plus loin
 
 - [x] En plus du Newton, ajouter une version matrix free (pour le linéaire : coder un cg matrix-free à la main qui prend en entrée une fonction qui est le produit matrice vecteur VJP, écrire le newton matrix free). Tester qu'on a les mêmes résultats que la version avec matrice.
-- [ ] Mettre solve comme une fonction statique de la classe `EllipticDGscheme` qui appelle le newton (fct en dehors de la classe qui prend un résidual en entrée : soit version standard soit matrix free).
-- [ ] Créer une nouvelle classe `dg_approximation_space` qui est pas projection mais elliptic. Dans le `get_intermediare_value`, on résout le problème pour calculer les dofs en faisant le `EllipticDGscheme.solve`.
-- [ ] Si tout marche bien, on est censé pouvoir faire l'optimisation du Laplacien. On résout le lap en dg avec très peu de mailles, ensuite on utilise un PINN qui prend en entrée le `dg_elliptic` qui va optimiser les bases et le mapping de façon à résoudre au mieux le laplacien.
+- [x] Mettre solve comme une fonction statique de la classe `EllipticDGscheme` qui appelle le newton (fct en dehors de la classe qui prend un résidual en entrée : soit version standard soit matrix free).
+- [x] Créer une nouvelle classe `dg_approximation_space` qui est pas projection mais elliptic. Dans le `get_intermediare_value`, on résout le problème pour calculer les dofs en faisant le `EllipticDGscheme.solve`.
+- [x] Si tout marche bien, on est censé pouvoir faire l'optimisation du Laplacien. On résout le lap en dg avec très peu de mailles, ensuite on utilise un PINN qui prend en entrée le `dg_elliptic` qui va optimiser les bases et le mapping de façon à résoudre au mieux le laplacien.
 - [ ] (Tester la différentiabilité du assemble_scheme : on veut différentier le Newton par rapport aux modèles. Peut-être commencer par une base apprenable, ou un laplacien avec terme source apprenable ?)
 - [ ] Plus tard : tester si on apprend un flux, qu'est-ce qui se passe...
 - [ ] Une fois que tout sera ça bon, on pourra faire le FEM... le FEM y a pas de terme de flux, c'est juste le terme de volume où il faut modifier un truc dedans.
