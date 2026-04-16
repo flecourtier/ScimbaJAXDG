@@ -28,6 +28,23 @@
 - [x] Mettre solve comme une fonction statique de la classe `EllipticDGscheme` qui appelle le newton (fct en dehors de la classe qui prend un résidual en entrée : soit version standard soit matrix free).
 - [x] Créer une nouvelle classe `dg_approximation_space` qui est pas projection mais elliptic. Dans le `get_intermediare_value`, on résout le problème pour calculer les dofs en faisant le `EllipticDGscheme.solve`.
 - [x] Si tout marche bien, on est censé pouvoir faire l'optimisation du Laplacien. On résout le lap en dg avec très peu de mailles, ensuite on utilise un PINN qui prend en entrée le `dg_elliptic` qui va optimiser les bases et le mapping de façon à résoudre au mieux le laplacien.
-- [ ] (Tester la différentiabilité du assemble_scheme : on veut différentier le Newton par rapport aux modèles. Peut-être commencer par une base apprenable, ou un laplacien avec terme source apprenable ?)
 - [ ] Plus tard : tester si on apprend un flux, qu'est-ce qui se passe...
 - [ ] Une fois que tout sera ça bon, on pourra faire le FEM... le FEM y a pas de terme de flux, c'est juste le terme de volume où il faut modifier un truc dedans.
+
+## Suite
+
+- [x] Enlever diff et diff/ad (garder que le cas général A,b,c)
+- [ ] Tester temps exécution entre newton normal et mat free pour la convergence du laplacien
+		-> tester de jiter "matvec" dans version matrix-free
+- [ ] Pour DG + PINN :
+	- [x]  Tester patchwise + mapping
+	      [(voir)](images/dgelliptic_patchwise_basis_with_mapping.png)
+	- [x] Tester version bases cellwise
+	      [(voir)](images/dgelliptic_cellwise_basis.png)
+	- [ ] Tester avec version matrix-free (Attention : point suivant)
+- [ ] Dans les 2 cas du newton, il faut faire le VJP où on a besoin de faire une inversion de matrice (pour le matrix-free on fait un cg où matvec c'est J^T * v avec une iter pour le cg mais pas de newton)
+- [ ] Tester le non-linéaire avec
+      $$-\nabla\cdot(A(u,x)\nabla u) + b(u,x)\cdot\nabla u + c(u,x) = f(x)$$
+      avec $u=u_\theta(x)$.
+      Attention : la composition peut pas prendre u (écrire la lambda fct lambda x: x^2 où x est u) 
+- [ ] Vérifier nb_dofsl peut-être pas bon dans le cadre bases field ou vec 
