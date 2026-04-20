@@ -14,9 +14,8 @@
     |`CellwiseParametricBasis`| `CellwiseParametricBasis`|
 
 - [x] Regarder la différence de temps et de convergence entre le cas `Patchwise` et `Cellwise` sur 5 cellules
-
 - [x] Relancer tous les tests (+ passer les losses en ylog).
-
+- [ ] Vérifier calcul de `nb_dofsl` car peut-être pas bon dans le cadre bases de type field ou vec 
 - [ ] Vérifier quelle signature est la meilleur pour le `_call__` de `Cellwise` :
     ```[python]
     def __call__(self, cell_module, i: int, inputs: jnp.ndarray) -> jnp.ndarray:

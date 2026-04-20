@@ -1,4 +1,4 @@
-# <span style="color:blue"><b>Tests :</b></span> Classe `EllipticDGscheme` (assemblage DG)
+# <span style="color:blue"><b>Tests & Exemples :</b></span> Classe `EllipticDGscheme` (assemblage DG)
 
 Ce document résume les vérifications mathématiques réalisées dans les quatres scripts:
 
@@ -38,6 +38,76 @@ Ainsi, la solution reconstruite dans la cellule $C_k$ est:
 $$
 u_h(x) = (1 + x-\bar{x_{k}}) \mathbb{1}_{\{x\in C_k\}}
 $$
+
+
+## Exemples et cas tests
+
+- [x] **Exemple 1.a (`assemble_volume_term.py`) :**
+
+    - *Tester :* l'assemblage du terme volumique pour un scalaire ($n_u=1$) avec une base analytique (Taylor).
+
+    - *Détails :* Prendre un cas test analytique et vérifier que l'assemblage est bon. (Par exemple les dofs à 1 pour $u$ et $f(x) = \sin(\pi x)$).
+
+    - *Valider :* `assembly_local_volume_term` (forme bilinéaire $a$ et forme linéaire $l$). 
+
+    ---
+
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases |
+    |---------|--------|-------------|---------|-------------|---------|--------|
+    | 100 | 3 | 2 | 1 | $\sin(\pi x)$ | / | $\varphi_{k,i}$ |
+
+- [x] **Exemple 1.b (`assemble_volume_term_system.py`) :**
+
+    - *Tester :* l'assemblage du terme volumique pour un système ($n_u=2$) avec une base analytique (Taylor).
+
+    - *Détails :* Définir `SystemLaplacianWeakForm` héritant de `AbstractLinearWeakForm`, avec une forme bilinéaire et linéaire vectorielles. Utiliser `ParamVecFunction` et ses composantes (`u_1`, `u_2`) pour exprimer la forme faible.
+
+    - *Valider :* `assembly_local_volume_term` dans le cas vectoriel (`basis_type="vec"`).
+
+    ---
+
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases |
+    |---------|--------|-------------|---------|-------------|---------|--------|
+    | 100 | 3 | 2 | 2 | $(\sin(\pi x),\, \sin(2\pi x))$ | / | $\varphi_{k,i}$ |
+
+- [x] **Exemple 1.c (`assemble_volume_term_learnable_source.py`) :**
+
+    - *Tester :* l'assemblage du terme volumique avec un terme source apprenable ($f_\theta$), une base `Patchwise` apprenable et un mapping apprenable.
+
+    - *Détails :* Utiliser `LaplacianWeakFormLearnableSource` avec un `SourceNN` (MLP). Définir une `BasisNN` (MLP) pour la base `Patchwise` et une `MappingNN` (InvertibleNet) pour le mapping. 
+
+    - *Valider :* `assembly_local_volume_term` avec bases et mapping apprenables + différentiation automatique JAX à travers l'assembleur.
+
+    ---
+
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases |
+    |---------|--------|-------------|---------|-------------|---------|--------|
+    | 1 | 3 | 2 | 1 | $f_\theta(x)$ | $g_\theta$ | $\varphi_{k,i}^{\theta,P}$ |
+
+
+- [x] **Exemple 2.a (`assemble_centered_flux_term.py`) :**
+
+    - *Tester :* l'assemblage du terme de flux numérique centré pour un scalaire ($n_u=1$) avec une base analytique (Taylor).
+
+    - *Détails :* Prendre un cas test analytique et vérifier que l'assemblage est bon. (Par exemple les dofs à 1 pour $u$ et $f(x) = \sin(\pi x)$).
+
+    - *Valider :* `assembly_local_flux_term` avec `CenteredFlux`.
+
+- [x] **Exemple 2.b (`assemble_laplacian_SIPG_flux_term.py`) :**
+
+    - *Tester :* l'assemblage du terme de flux numérique SIPG pour un scalaire ($n_u=1$) avec une base analytique (Taylor).
+
+    - *Détails :* Prendre un cas test analytique et vérifier que l'assemblage est bon. (Par exemple les dofs à 1 pour $u$ et $f(x) = \sin(\pi x)$).
+
+    - *Valider :* `assembly_local_flux_term` avec `SIPGFlux`.
+
+- [x] **Exemple 3 (`assemble_scheme.py`) :**
+
+    - *Tester :* l'assemblage complet du résidu DG (volume + flux) pour un scalaire ($n_u=1$) avec une base analytique (Taylor).
+
+    - *Détails :* Prendre un cas test analytique et vérifier que l'assemblage est bon. (Par exemple les dofs à 1 pour $u$ et $f(x) = \sin(\pi x)$).
+
+    - *Valider :* `assembly_scheme` qui combine les termes volumiques et de flux.
 
 ## 1.2 Termes de volume : `assemble_volume_terms`
 

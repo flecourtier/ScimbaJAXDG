@@ -4,18 +4,24 @@
 
 ### Exemple sans apprentissage
 
-- [x] **Exemple 1.a (`solve_laplacian.py`) :** [(voir)](images/solve/solve_laplacian.png)
+- [x] **Exemple 1.a (`solve_laplacian_polynomial_solution_SIPG.py`) :**
+
+    - *Tester :* la classe `EllipticDGscheme` pour la résolution de l'équation de Poisson (Laplacien) avec une base analytique (Taylor) et une solution polynomiale.
+
+    - *Valider :* erreur à précision machine.
+
+- [x] **Exemple 1.b (`solve_laplacian.py`) :** [(voir)](images/solve/solve_laplacian.png)
 
     - *Tester :* la classe `EllipticDGscheme` pour la résolution de l'équation de Poisson (Laplacien) avec une base analytique (Taylor).
 
     - *Valider :* les courbes de convergence en $L^2$, $L^\infty$ et $H^1$ pour les flux SIPG, NIPG et BZ.
 
-- [x] **Exemple 1.b (`solve_laplacian_matrix_free.py`) :** [(voir)](images/solve/solve_laplacian_matrix_free.png)
+- [x] **Exemple 1.c (`solve_laplacian_matrix_free.py`) :** [(voir)](images/solve/solve_laplacian_matrix_free.png)
 
     - *Tester :* la même chose mais en version "matrix free".
 
     - *Valider :* les courbes de convergence en $L^2$, $L^\infty$ et $H^1$ pour les flux SIPG et BZ.
-
+ 
 - [x] **Exemple 2 (`solve_diffusion.py`) :** [(voir)](images/solve/solve_diffusion.png)
 
     - *Tester :* la classe `EllipticDGscheme` pour la résolution de l'équation de diffusion avec une base analytique (Taylor).
