@@ -19,9 +19,9 @@
 - [x] Tester 2 autres flux en plus de SIPG (regarder ref).
 - [x] Tester avec de l'advection ($b$ non nul).
 - [x] Ajouter de la réaction ($c$ non nul).
-- [ ] Tester avec des termes sources différents
 - [x] Regarder les perfs : pourquoi ça mets autant de temps à tourner ?
-
+- [x]  Enlever diffusion et diffusion/advection (garder que le cas général avec A,b,c)
+- [ ] Tester avec des termes sources différents
 ## Pour aller plus loin
 
 - [x] En plus du Newton, ajouter une version matrix free (pour le linéaire : coder un cg matrix-free à la main qui prend en entrée une fonction qui est le produit matrice vecteur VJP, écrire le newton matrix free). Tester qu'on a les mêmes résultats que la version avec matrice.
@@ -29,11 +29,8 @@
 - [x] Créer une nouvelle classe `dg_approximation_space` qui est pas projection mais elliptic. Dans le `get_intermediare_value`, on résout le problème pour calculer les dofs en faisant le `EllipticDGscheme.solve`.
 - [x] Si tout marche bien, on est censé pouvoir faire l'optimisation du Laplacien. On résout le lap en dg avec très peu de mailles, ensuite on utilise un PINN qui prend en entrée le `dg_elliptic` qui va optimiser les bases et le mapping de façon à résoudre au mieux le laplacien.
 - [ ] Plus tard : tester si on apprend un flux, qu'est-ce qui se passe...
-- [ ] Une fois que tout sera ça bon, on pourra faire le FEM... le FEM y a pas de terme de flux, c'est juste le terme de volume où il faut modifier un truc dedans.
-
 ## Suite
 
-- [x] Enlever diff et diff/ad (garder que le cas général A,b,c)
 - [ ] Tester temps exécution entre newton normal et mat free pour la convergence du laplacien
 		-> tester de jiter "matvec" dans version matrix-free
 - [ ] Pour DG + PINN :
@@ -48,3 +45,7 @@
       avec $u=u_\theta(x)$.
       Attention : la composition peut pas prendre u (écrire la lambda fct lambda x: x^2 où x est u) 
 - [ ] Vérifier nb_dofsl peut-être pas bon dans le cadre bases field ou vec 
+- [ ] Tetser de demander à Claude de faire un code dg tout simple pour résoudre laplacien P1 sur un carré et comparer temps d'execution avec version scimba_jax_dg
+
+
+- [ ] **Michel :** Est-ce qu'avec une base enrichie on gagne en ordre ? ou en constante de convergence ?  

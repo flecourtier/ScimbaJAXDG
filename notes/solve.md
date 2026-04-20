@@ -1,11 +1,5 @@
 # 1 Solve Laplacian
 
-[(voir)](images/solve_laplacian_compare_flux.png)
-
-[(voir - Matrix Free)](images/solve_laplacian_compare_flux_matrix_free.png)
-
-[(voir - Bases apprenables)](images/dgelliptic_patchwise_basis.png)
-
 Référence pour les formulations : [Unified Analysis of Discontinuous Galerkin Methods for Elliptic Problems. Douglas N. Arnold, Franco Brezzi, Bernardo Cockburn, and L. Donatella Marini](https://www-users.cse.umn.edu/~arnold/papers/dgerr.pdf)
 ## 1.1 Formulation primale
 
@@ -151,7 +145,8 @@ C'est une équation variationnelle classique : le membre de droite est le terme 
 
 On s'intéresse à trois flux numériques (SIPG, NIPG et Babuska-Zlaman) dont les propriétés sont résumées dans la table ci-dessous.
 
-![[table_flux.png]]
+![](images/table_flux.png)
+
 ### 1.2.1 Symmetric Interior Penalty Galerkin (SIPG)
 
 SIPG est l'une des méthodes DG les plus utilisées pour les problèmes elliptiques. Elle est obtenue en choisissant les flux numériques de façon à ce que la forme bilinéaire $B_h$ soit **symétrique**, **consistante**, et **stable** moyennant un paramètre de pénalité suffisamment grand.
@@ -317,7 +312,7 @@ La classe `BabuSkaZlamalFlux` ne fait intervenir **aucun terme de gradient** dan
 - **Faces intérieures** : `fluxL = mu * jump_u * vL * nL`, `fluxR = mu * jump_u * vR * nR`, avec `jump_u = uL * nL + uR * nR`.
 - **Faces frontières** : `flux = mu * (u - g) * n * v * n`, où $g$ est la valeur de Dirichlet.
 
-# 2 Solve Diffusion [(voir)](images/solve_diffusion_compare_flux.png)
+# 2 Solve Diffusion
 
 Le problème considéré est :
 
@@ -352,7 +347,7 @@ Le choix du paramètre reste le même qu'au Laplacien :
 | SIPG / NIPG | `sigma = p*(p+1)`, `h = 1/n_cells` |
 | BZ | `mu = 1/h**(2*p+1)` |
 
-# 3 Solve Diffusion/Advection [(voir)](images/solve_diffusion_advection_compare_flux.png)
+# 3 Solve Diffusion/Advection
 
 Le problème considéré est :
 
@@ -380,7 +375,7 @@ Le terme d'advection ne génère **aucun terme d'interface** (pas d'intégration
 
 Identique à la diffusion (section 2.3).
 
-# 4 Solve Diffusion/Advection/Reaction [(voir)](images/solve_diffusion_advection_reaction_compare_flux.png)
+# 4 Solve Diffusion/Advection/Reaction
 
 Le problème considéré est :
 

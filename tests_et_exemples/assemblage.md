@@ -1,4 +1,4 @@
-# 1 Assemblage DG - Présentation des exemples
+# <span style="color:blue"><b>Tests :</b></span> Classe `EllipticDGscheme` (assemblage DG)
 
 Ce document résume les vérifications mathématiques réalisées dans les quatres scripts:
 

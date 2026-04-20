@@ -1,4 +1,4 @@
-# <span style="color:blue"><b>TODO :</b></span> Classe `Variables`
+# <span style="color:blue"><b>Tests & Exemples :</b></span> Classe `Variables`
 
 ## **Notations**
 
@@ -18,9 +18,9 @@
 - $\mathcal{P}, \mathcal{P}_\theta$ : post-processing $\longrightarrow$ analytique, réseau de neurones
 - $\varphi_{k,i}$, $\varphi_{k,i}^{\theta,P}$, $\varphi_{k,i}^{\theta,C}$ : la $i$-ème fonction de base (trial) dans la $k$-ème cellule $\longrightarrow$ Taylor, un réseau de neurones (`Patchwise`), $n_c$ réseaux de neurones (`Cellwise`)
 
-## **Cas tests**
+## **Exemples**
 
-- [x] **Cas test 1 (`variable.py`) :** 
+- [x] **Exemple 1.a (`variable.py`) :** (TEST)
 
     - *Tester :* la classe `Variables` sans post-processing (PP None) avec une base analytique (Taylor).
 
@@ -34,7 +34,12 @@
     | " | " | " | " | $x+1$ | " | " | " |
     | " | " | " | " | $2x^2 - 0.2x + 1$ | " | " | " |
 
-- [x] **Cas test 2 (`variable_local_post_processing.py`) :** 
+
+- [x] **Exemple 1.b (`variable_mixed_basis.py`) :** (TEST)
+
+    - *Tester :* la classe `Variables` sans post-processing (PP None) avec une base mixte (analytique dans la première cellule et réseau dans la deuxième cellule).
+
+- [x] **Exemple 2 (`variable_local_post_processing.py`) :** 
 
     - *Tester :* la classe `Variables` avec post-processing (PP analytique) et une base analytique (Taylor).
 
@@ -49,7 +54,7 @@
     | 200 | 4 | 3 | 5 | $(x+1)^2$ | / | $\varphi_{k,i}$ | linéaire : $2w$ |
     | " | " | " | " | " | " | " | non-linéaire : $w^2$ |
 
-- [x] **Cas test 3 (`variable_local_post_processing_NN.py`) :** 
+- [x] **Exemple 3 (`variable_local_post_processing_NN.py`) :** 
 
     - *Tester :* la classe `Variables` avec post-processing (PP réseau) et une base analytique (Taylor).
     
@@ -61,9 +66,9 @@
 
     | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
     |---------|--------|-------------|---------|-------------|---------|--------|-------------|--------|
-    | 5 | 4 | 2 | 1 | $\sin(x^2+1)$ | / | $\varphi_{k,i}$ | $\mathcal{P}_\theta$ | [(voir)](images/variable_local_post_processing_NN.png) |
+    | 5 | 4 | 2 | 1 | $\sin(x^2+1)$ | / | $\varphi_{k,i}$ | $\mathcal{P}_\theta$ | [(voir)](images/variables/variable_local_post_processing_NN.png) |
 
-- [x] **Cas test 4.a (`variable_patchwise_basis.py`) :** 
+- [x] **Exemple 4.a (`variable_patchwise_basis.py`) :** 
 
     - *Tester :* la classe `Variables` sans post-processing et une base réseau (`Patchwise`).
 
@@ -75,10 +80,10 @@
 
     | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
     |---------|--------|-------------|---------|-------------|---------|--------|-------------|--------|
-    | 1 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variable_patchwise_basis.png) |
+    | 1 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variables/variable_patchwise_basis.png) |
 
 
-- [x] **Cas test 4.b (`variable_patchwise_basis_with_mapping.py`) :** 
+- [x] **Exemple 4.b (`variable_patchwise_basis_with_mapping.py`) :** 
 
     - *Tester :* la même chose. Ajouter un `Mapping` entraînable pour le maillage.
 
@@ -88,9 +93,9 @@
 
     | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
     |---------|--------|-------------|---------|-------------|---------|--------|-------------|--------|
-    | 1 | 10 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | $g_\theta$ | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variable_patchwise_basis_with_mapping.png) |
+    | 1 | 10 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | $g_\theta$ | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variables/variable_patchwise_basis_with_mapping.png) |
 
-- [x] **Cas test 5 (`variable_patchwise_basis_pretrained.py`) :** 
+- [x] **Exemple 5 (`variable_patchwise_basis_pretrained.py`) :** 
 
     - *Tester :* la classe `Variables` sans post-processing et une base réseau pré-entraîné (`Patchwise`).
 
@@ -102,14 +107,14 @@
 
     | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
     |---------|--------|-------------|---------|-------------|---------|--------|-------------|--------|
-    | 1 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variable_patchwise_basis_pretrained.png) |
+    | 1 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$ | / | [(voir)](images/variables/variable_patchwise_basis_pretrained.png) |
 
 
-- [x] **Cas test 6 (`variable_cellwise_basis.py`) :** 
+- [x] **Exemple 6 (`variable_cellwise_basis.py`) :** 
 
     - *Tester :* la classe `Variables` sans post-processing et une base réseau (`Cellwise`).
 
-    - *Détails :* Même cas test que cas test 4.a mais un réseau par maille. (On pourra essayer de rajouter une condition de continuité entre les mailles dans la loss pour voir l'impact).
+    - *Détails :* Même exemple que exemple 4.a mais un réseau par maille. (On pourra essayer de rajouter une condition de continuité entre les mailles dans la loss pour voir l'impact).
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour bases apprenable - `Cellwise`).
 
@@ -117,11 +122,11 @@
 
     | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
     |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
-    | 2 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,C}$ | / | [(voir)](images/variable_cellwise_basis.png),[(zoom)](images/variable_cellwise_basis_zoom.png) |
-    | 5 | " | " | " | " | " | " | " | [(voir)](images/variable_cellwise_basis_nc5.png),[(zoom)](images/variable_cellwise_basis_nc5_zoom.png) |
-    | 10 | " | 2 | " | " | " | " | " | [(voir)](images/variable_cellwise_basis_nc10.png) |
+    | 2 | 20 | 1 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,C}$ | / | [(voir)](images/variables/variable_cellwise_basis.png),[(zoom)](images/variables/variable_cellwise_basis_zoom.png) |
+    | 5 | " | " | " | " | " | " | " | [(voir)](images/variables/variable_cellwise_basis_nc5.png),[(zoom)](images/variables/variable_cellwise_basis_nc5_zoom.png) |
+    | 10 | " | 2 | " | " | " | " | " | [(voir)](images/variables/variable_cellwise_basis_nc10.png) |
 
-- [x] **Cas test 7 (`variable_cellwise_basis_and_local_post_processing_NN.py`) :** 
+- [x] **Exemple 7 (`variable_cellwise_basis_and_local_post_processing_NN.py`) :** 
 
     - *Tester :* la classe `Variables` avec post-processing (PP réseau) et une base réseau (`Cellwise`).
 
@@ -129,42 +134,12 @@
 
     | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
     |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
-    | 8 | 20 | 2 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,C}$ | $\mathcal{P}_\theta$ | [(voir)](images/variable_cellwise_basis_and_local_post_processing_NN.png),[(zoom)](images/variable_cellwise_basis_and_local_post_processing_NN_zoom.png) |
+    | 8 | 20 | 2 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,C}$ | $\mathcal{P}_\theta$ | [(voir)](images/variables/variable_cellwise_basis_and_local_post_processing_NN.png),[(zoom)](images/variables/variable_cellwise_basis_and_local_post_processing_NN_zoom.png) |
 
-<!-- - [ ] **Cas test 8 (...) :** 
+- [x] **Exemple 8 (`compare_patchwise_cellwise.py`) :**
 
-    - *Tester :* la classe `Variables` sans post-processing et une base analytique (Taylor), mais avec un `Mapping` entrainable.
+    - *Détails :* Comparer les cas `Patchwise` et `Cellwise` sur 5 cellules, 20 points de quadrature, des bases d'ordre 2 et la même fonction à projeter. Ne pas utiliser de post-processing ni de mapping.
 
-    - *Détails :* ...
-
-    - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour mapping apprenable). -->
-
-- [ ] **Supplémentaires :**
-
-    - [x] Rajouter un evaluate général (en plus du `evaluate_quad`)
-    - [x] Mettre le `find_cell_index` dans le vmap dans un `classical_evaluate_2` (et comparer)
-    - [x] Adapter la projection/evaluation au cas `Cellwise`
-    - [x] Modifier `Variables` pour prendre en compte deux bases, la trial et la test (supposer que test est même type que trial ou analytique).
-
-        | Trial | Test |
-        |---------|--------|
-        |`AnalyticBasis`| `AnalyticBasis`|
-        |`PatchwiseParametricBasis`| `AnalyticBasis`|
-        |`PatchwiseParametricBasis`| `PatchwiseParametricBasis`|
-        |`CellwiseParametricBasis`| `AnalyticBasis`|
-        |`CellwiseParametricBasis`| `CellwiseParametricBasis`|
-
-    - [x] Regarder la différence de temps et de convergence entre le cas `Patchwise` et `Cellwise` sur 5 cellules
-
-        | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
-        |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
-        | 5 | 20 | 2 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$/$\varphi_{k,i}^{\theta,C}$ | / | [(voir)](images/compare_patchwise_cellwise.png) |
-
-    - [x] Relancer tous les tests (+ passer les losses en ylog).
-    
-    - [ ] Vérifier quelle signature est la meilleur pour le `_call__` de `Cellwise` :
-        ```[python]
-        def __call__(self, cell_module, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
-        def __call__(self, i: int, inputs: jnp.ndarray) -> jnp.ndarray:
-
-        ```
+    | $n_c$ | $n_\text{quad}$ | $n_b$ | $n_u$ | $f(x)$ | Mapping | Bases | Post-processing | |
+    |---------|--------|-------------|---------|-------------|---------|--------|-------------|-------------|
+    | 5 | 20 | 2 | 1 | $\sin(2\pi(x^2+1)) + 2$ | / | $\varphi_{k,i}^{\theta,P}$/$\varphi_{k,i}^{\theta,C}$ | / | [(voir)](images/variables/compare_patchwise_cellwise.png) |
