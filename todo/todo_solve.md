@@ -20,6 +20,9 @@
 - [x] Ajouter de la réaction ($c$ non nul).
 - [x]  Enlever diffusion et diffusion/advection (garder que le cas général avec A,b,c)
 - [ ] Tester avec des termes sources différents
+- [ ] <span style="color:red"><b>(Point 3)</b></span> Faire comme pour les résidus ou une EDP est pas juste une weak form mais contient une weak form intérieur et une de bord.
+- [ ] <span style="color:red"><b>(Point 5)</b></span>
+	Validation de system ( avec  2 laplacien couplés . Tu décide de la solution et  tu calcule la source)
 
 **Performances:**
 
@@ -35,12 +38,27 @@
 - [x] Tester version bases cellwise
 - [ ] Tester bases patchwise avec version matrix-free. Dans les 2 cas, il faut faire le VJP avec une inversion de matrice (pour le matrix-free on fait un cg où matvec c'est $J^T * v$ avec une iter pour le cg mais pas de newton)
 		-> tester de jiter "matvec" dans version matrix-free
-- [ ] Tester le non-linéaire avec $-\nabla\cdot(A(u,x)\nabla u) + b(u,x)\cdot\nabla u + c(u,x) = f(x)$ où $u=u_\theta(x)$.
-		Attention : la composition ne peut pas prendre $u$ directement (écrire la lambda fonction comme lambda x: x^2 où x est u) 
+- [ ] <span style="color:red"><b>(Point 1)</b></span>
+	Tester le non-linéaire avec $-\nabla\cdot(A(u,x)\nabla u) + b(u,x)\cdot\nabla u + c(u,x) = f(x)$ où $u=u_\theta(x)$. 
+	Attention : la composition ne peut pas prendre $u$ directement (écrire la lambda fonction comme lambda x: x^2 où x est u). 
 - [ ] Plus tard : tester si on apprend un flux, qu'est-ce qui se passe...
-
 **Performances:**
 
+- [ ] Regarder les modifs d'Emmanuel et de Victor.
 - [ ] Tester temps exécution entre newton normal et mat free pour la convergence du laplacien
 - [ ] Tester de demander à Claude de faire un code dg tout simple pour résoudre laplacien P1 sur un carré et comparer temps d'execution avec version scimba_jax_dg
 - [ ] (**Michel**) Est-ce qu'avec une base enrichie on gagne en ordre ? ou en constante de convergence ?  
+
+
+## Solve DG - Multidimensionnel
+
+- [x] Adapter `Mesh` et `EllipticDGscheme` pour le cas multidimensionnel.
+- [x] Tester un problème de Poisson en $\mathbb{P1}$ sur un carré et vérifier les convergences.
+- [ ] <span style="color:red"><b>(Point 6)</b></span>
+	Tester en 3D.
+
+## Solve FEM - 1D
+
+- [ ] <span style="color:red"><b>(Point 2)</b></span> Attendre infos Emmanuel.
+- [ ] <span style="color:red"><b>(Point 4)</b></span> Implémenter les bases de Lagrange + tester.
+	Adapter l'implémentation des bases de Taylor.
