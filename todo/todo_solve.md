@@ -20,9 +20,9 @@
 - [x] Ajouter de la réaction ($c$ non nul).
 - [x]  Enlever diffusion et diffusion/advection (garder que le cas général avec A,b,c)
 - [ ] Tester avec des termes sources différents
-- [ ] <span style="color:red"><b>(Point 3)</b></span> Faire comme pour les résidus ou une EDP est pas juste une weak form mais contient une weak form intérieur et une de bord.
+- [ ] <span style="color:red"><b>(Point 3)</b></span> Faire comme pour les résidus où une EDP c'est pas juste une weak form mais elle contient une weak form intérieur et une de bord.
 - [ ] <span style="color:red"><b>(Point 5)</b></span>
-	Validation de system ( avec  2 laplacien couplés . Tu décide de la solution et  tu calcule la source)
+	Validation de system (avec  2 laplacien couplés ).
 
 **Performances:**
 
@@ -59,6 +59,9 @@
 
 ## Solve FEM - 1D
 
-- [ ] <span style="color:red"><b>(Point 2)</b></span> Attendre infos Emmanuel.
+- [x] Modifier Variables en VariablesDG.
+- [ ] <span style="color:red"><b>(Point 2)</b></span> Implémenter VariablesFE (en plus de VariablesDG). On a moins de dofsl car il y a des dofs partagés. Ajouter a une fonction qui permet de récupérer à partir de la cellule local, l'indice global du dofs dans dofsl.
+- [ ] Tester un laplacien Dirichlet avec VariablesFE.
 - [ ] <span style="color:red"><b>(Point 4)</b></span> Implémenter les bases de Lagrange + tester.
 	Adapter l'implémentation des bases de Taylor.
+- [ ] Tester d'implémenter $\varphi$-FEM Dirichlet.

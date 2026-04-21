@@ -2,7 +2,7 @@
 
 ---
 
-On considère la dimension physique $d=1$.
+<!-- On considère la dimension physique $d=1$. -->
 
 ## 1. Mapping 📖
 
@@ -32,7 +32,8 @@ où $n_{\text{quad}}$ est le degré/nombre de points de quadrature (`ordre` = `n
 
 ## 3. Maillage
 
-> src/scimba_jax/linear_approximation/meshes/mesh_1d.py
+<!-- > src/scimba_jax/linear_approximation/meshes/mesh_1d.py -->
+> src/scimba_jax/linear_approximation/meshes/mesh.py
 
 Passage sur l'élément de référence pour l'intégration :
 
@@ -54,7 +55,8 @@ On note :
 - $d$ : la dimension physique (pour l'instant $d=1$)
 - $n_c$ : le nombre de cellules
 - $n_{\text{quad}}$ : le nombre de points de quadrature
-- $n_b$ : l'ordre de la base (`order`)
+<!-- - $n_b$ : l'ordre de la base (`order`) -->
+- $n_b$ : nombre de fonctions de base par cellule ($= \text{order}^d$, avec `order` le nombre de termes par direction, degré max par direction $= \text{order} - 1$)
 - $n_u$ :  le nombre total de variables (`out_dim`)
 
 Chaque variable peut s'écrire sous la forme :
@@ -64,8 +66,20 @@ $$ u(x) = \sum_{k=0}^{n_c-1} \sum_{i=0}^{n_b-1} u_{k,i} \bar{\varphi}_{k,i}(x) $
 où $\bar{\varphi}_{k,i}(x)$ est la $i$-ème fonction de base (trial) dans la $k$-ème cellule. On notera $\varphi_{k,i}(x)$ pour la base analytique (Taylor) et $\varphi_{k,i}^{\theta,P}(x)$, $\varphi_{k,i}^{\theta,C}(x)$ pour les bases paramétrées (Patchwise, Cellwise).
 
 ### Analytic Basis (Taylor)
-$$ \varphi_{k,i}(x) = \frac{(x - x_k)^i}{i!} \quad \longrightarrow \quad (n_b, n_u). $$
-où $x_k$ est le centre de la cellule $k$, 
+
+<!-- $$ \varphi_{k,i}(x) = \frac{(x - x_k)^i}{i!} \quad \longrightarrow \quad (n_b, n_u). $$
+où $x_k$ est le centre de la cellule $k$,  -->
+
+Base en **espace $Q_{\text{order}-1}$** (produit tensoriel). Pour chaque multi-indice $\mathbf{p} = (p_0, \ldots, p_{d-1}) \in \{0, \ldots, \text{order}-1\}^d$ :
+
+$$ \varphi_{k,\mathbf{p}}(x) = \prod_{l=0}^{d-1} \frac{(x_l - x_{k,l})^{p_l}}{p_l!} \quad \longrightarrow \quad (n_b, n_u) $$
+
+où $x_k = (x_{k,0}, \ldots, x_{k,d-1})$ est le centre de la cellule $k$, et $n_b = \text{order}^d$.
+
+En dimension 1 : $\varphi_{k,i}(x) = \dfrac{(x - x_k)^i}{i!}$ pour $i \in \{0, \ldots, \text{order}-1\}$.
+
+> **Q vs P** : chaque direction contribue indépendamment des monômes jusqu'au degré $\text{order}-1$ → espace $Q_{\text{order}-1}$. L'espace $P_k$ (degré total $\leq k$) ne garderait que les multi-indices vérifiant $\sum_l p_l \leq k$, avec $\binom{k+d}{d}$ fonctions au lieu de $(\text{order})^d$.
+
 
 **Dimensions :**
 * $x$ : pts de quadrature (global) $\quad \longrightarrow \quad (n_c, n_{\text{quad}}, d)$
