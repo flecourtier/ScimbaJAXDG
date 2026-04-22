@@ -62,6 +62,6 @@
 - [x] Modifier Variables en VariablesDG.
 - [ ] <span style="color:red"><b>(Point 2)</b></span> Implémenter VariablesFE (en plus de VariablesDG). On a moins de dofsl car il y a des dofs partagés. Ajouter a une fonction qui permet de récupérer à partir de la cellule local, l'indice global du dofs dans dofsl.
 - [ ] Tester un laplacien Dirichlet avec VariablesFE.
-- [ ] <span style="color:red"><b>(Point 4)</b></span> Implémenter les bases de Lagrange + tester.
-	Adapter l'implémentation des bases de Taylor.
+- [x] <span style="color:red"><b>(Point 4)</b></span> Implémenter les bases de Lagrange + tester.
+- [ ] Adapter l'implémentation des bases de Taylor.
 - [ ] Tester d'implémenter $\varphi$-FEM Dirichlet.
