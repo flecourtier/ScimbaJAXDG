@@ -2,33 +2,89 @@
 
 ---
 
-<!-- On considère la dimension physique $d=1$. -->
+## Notations
 
-## 1. Mapping 📖
+**Généralités :**
+
+- $d$ : dimension physique
+- $q$ : ordre de quadrature par direction
+- $n_\text{quad} = q^d$ : nombre total de points de quadrature
+<!-- - $n_c$ : nombre de cellules -->
+<!-- - $n_b$ : ordre de la base (`order`) -->
+<!-- - $n_u$ : nombre total de variables (`out_dim`) -->
+
+**Spécifique à ScimBa :** (mapping, post-processing et/ou bases apprenables)
+
+- $\theta$ : paramètres du réseau de neurones (notation générique pour le mapping, le post-processing et les bases apprenables)
+- $g, g_\theta$ : mapping du maillage (composition de $m$ fonctions) $\longrightarrow$ analytique, réseau de neurones
+- $m$ : nombre de fonctions composées dans le mapping
+<!-- - $\mathcal{P}, \mathcal{P}_\theta$ : post-processing $\longrightarrow$ analytique, réseau de neurones -->
+<!-- - $\varphi_{k,i}$, $\varphi_{k,i}^{\theta,P}$, $\varphi_{k,i}^{\theta,C}$ : la $i$-ème fonction de base (trial) dans la $k$-ème cellule $\longrightarrow$ Taylor, un réseau de neurones (`Patchwise`), $n_c$ réseaux de neurones (`Cellwise`) -->
+
+## 1. Mapping
 
 > src/scimba_jax/mapping/mapping.py
 
-* `@dataclass(frozen=True)` $\rightarrow$ génère `__init__`, `__str__`, `__eq__` $\rightarrow$ Instance immuable.
-* **Mapping** = Composition de `InvertibleFunction` et `InvertibleModule`.
+### Description
 
-$$g = g_m \circ g_{m-1} \circ ... \circ g_1$$
+Un `Mapping` est une composition ordonnée de mapping :
 
-avec $m$ le nombre de fonctions composées. Peut dépendre de $\theta$ (paramètres d'un réseau de neurones).
+$$g = g_m \circ g_{m-1} \circ \cdots \circ g_1$$
 
-## 2. Quadrature 📖
+avec $m$ le nombre de fonctions composées où chaque $g_i$ est un mapping inversible d'un des deux types suivants :
+
+| Type | Description |
+|---|---|
+| `InvertibleFunction` | Mapping inversible analytique |
+| `InvertibleNet` | Réseau inversible du module Equinox (`eqx.Module`) — |
+
+L'application inverse de $g$ est donc donnée par :
+
+$$g^{-1} = g_1^{-1} \circ g_2^{-1} \circ \cdots \circ g_m^{-1}.$$
+
+### Calcul du Jacobien
+
+<span style="color: red;">A COMPLETER</span>
+
+### Méthodes disponibles
+
+Les méthodes disponibles pour le `Mapping` sont : mapping direct, inverse, jacobien, jacobien inverse, déterminant du jacobien, déterminant du jacobien inverse.
+
+### Enregistrement comme pytree JAX
+
+`Mapping` est enregistré comme pytree jax avec les attributs suivants :
+- `children` : les `InvertibleNet` (apprenables, mis à jour par l'optimiseur)
+- `aux_data` : les `InvertibleFunction` statiques (non différentiables au sens pytree)
+
+## 2. Quadrature
 
 > src/scimba_jax/linear_approximation/quad/gauss_quad.py
 
-$$ \int_{0}^1 f(x) dx = \sum_{i=1}^{n_{\text{quad}}} w_i f(x_i) $$
+## Description
 
-où $n_{\text{quad}}$ est le degré/nombre de points de quadrature (`ordre` = `n_points` pour $d=1$).
+La classe `UnitSquareTensorized` construit une quadrature par produit tensoriel sur l'hypercube de référence $[0,1]^d$.
 
-**Dimensions des tenseurs :**
-* `points_1D`,`weights_1D` : $(n_{\text{quad}},)$, $(n_{\text{quad}},)$
-* `volumic_points`, `volumic_weights` : $(n_{\text{quad}}^d, d)$, $(n_{\text{quad}}^d,)$
-* `surfacic_points` : liste de taille $2d$ (2 faces par dim) où chaque élément est $(n_{\text{quad}}^{d-1}, d)$
+$$ \int_{[0,1]^d} f(\xi)\, d\xi \approx \sum_{i=1}^{n_{\text{quad}}} w_i\, f(\xi_i) $$
 
-    `surfacic_weights` : liste de taille $2d$ (2 faces par dim) où chaque élément est $(n_{\text{quad}}^{d-1},)$
+où $n_{\text{quad}} = q^d$ est le nombre total de points volumiques, $w_i$ sont les poids de quadrature et $\xi_i$ les points de quadrature.
+
+### Règles de quadrature 1D
+
+Actuellement, deux variantes de règles de quadrature 1D (remappés de l'intervalle $[-1,1]$ à $[0,1]$) sont disponibles : Gauss-Legendre et Chebyshev. Pour un ordre de quadrature $q$, les polynômes de Gauss-Legendre permettent d'intégrer exactement les polynômes de degré jusqu'à $2q-1$.
+
+### Règle de quadrature multidimensionnelle
+
+Ces points et poids 1D sont ensuite tensorisés pour construire les points et poids volumiques et surfaciques sur l'hypercube de référence.
+
+Plus précisément, les points volumiques sont construits par le produit tensoriel des points 1D dans chaque direction, et les poids volumiques sont le produit des poids 1D correspondants.
+
+Pour les points surfaciques, on fixe une coordonnée normale à $0$ ou $1$ et on construit un produit tensoriel $(d-1)$-dimensionnel dans les directions tangentes.
+
+### Dimensions des tenseurs
+
+* `points_1d`, `weights_1d` : $(q,)$, $(q,)$
+* `volumic_points`, `volumic_weights` : $(q^d,\, d)$, $(q^d,)$
+* `surfacic_points`, `surfacic_weights` : $(2d,\, q^{d-1},\, d)$, $(2d,\, q^{d-1})$
 
 ## 3. Maillage
 
@@ -52,11 +108,10 @@ $$ \int_{\Omega_{\text{ref}}} f(\Phi(\xi)) |\det J_{\Phi}(\xi)| d\xi \approx \su
 
 On note :
 
-- $d$ : la dimension physique (pour l'instant $d=1$)
+- $d$ : la dimension physique
 - $n_c$ : le nombre de cellules
 - $n_{\text{quad}}$ : le nombre de points de quadrature
-<!-- - $n_b$ : l'ordre de la base (`order`) -->
-- $n_b$ : nombre de fonctions de base par cellule ($= \text{order}^d$, avec `order` le nombre de termes par direction, degré max par direction $= \text{order} - 1$)
+- $n_b$ : nombre de fonctions de base par cellule ($= (\text{order}+1)^d$, avec `order` le degré polynomial maximal par direction)
 - $n_u$ :  le nombre total de variables (`out_dim`)
 
 Chaque variable peut s'écrire sous la forme :
@@ -101,7 +156,7 @@ En dimension 1 : $\varphi_{k,i}(x) = \dfrac{(x - x_k)^i}{i!}$ pour $i \in \{0, \
 
 ## 6. Variables
 
-> src/scimba_jax/linear_approximation/variables/variables.py
+> src/scimba_jax/linear_approximation/variables/variables_dg.py
 
 $$ u_h(x) = \sum_{k=0}^{n_c-1} \sum_{i=0}^{n_b-1} u_{k,i} \bar{\varphi}_{k,i}(x) \mathbb{1}_{\{x \in C_k\}} $$
 
