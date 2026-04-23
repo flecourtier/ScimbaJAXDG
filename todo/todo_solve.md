@@ -63,5 +63,5 @@
 - [ ] <span style="color:red"><b>(Point 2)</b></span> Implémenter VariablesFE (en plus de VariablesDG). On a moins de dofsl car il y a des dofs partagés. Ajouter a une fonction qui permet de récupérer à partir de la cellule local, l'indice global du dofs dans dofsl.
 - [ ] Tester un laplacien Dirichlet avec VariablesFE.
 - [x] <span style="color:red"><b>(Point 4)</b></span> Implémenter les bases de Lagrange + tester.
-- [ ] Adapter l'implémentation des bases de Taylor.
+- [ ] Adapter l'implémentation des bases de Taylor [(Thèse - Taylor DG)](https://theses.hal.science/tel-00765575/document).
 - [ ] Tester d'implémenter $\varphi$-FEM Dirichlet.
