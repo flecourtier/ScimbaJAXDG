@@ -2,6 +2,8 @@
 
 ---
 
+On se place ici dans le contexte où on travaille sur un seul "patch" divisé en plusieurs cellules. L'élargissement à des domaines composés de plusieurs patchs sera abordée par la suite.
+
 ## Notations
 
 ### Générales
@@ -44,12 +46,15 @@
     - $k \in [0, n_\text{faces} - 1]$ : indexation plate
     - $\bar{k} = (k_0, \ldots, k_{d-1})$ : indexation multi-dim (avec $k_\ell \in [0, N_\ell]$) pour un groupe de faces $\ell$ fixé
 
-<!-- - $n_b$ : ordre de la base (`order`) -->
-<!-- - $n_u$ : nombre total de variables (`out_dim`) -->
+### Bases
 
+- $n_b$ : nombre de fonctions de base par cellule (`nb_basis`)
+- $n_{\text{out}}$ : dimension de sortie, nombre de variables dans le système (`out_dim`) 
+    <span style="color: red;">-> à clarifier</span>
+- $\bar{\varphi}_{c,i}, \bar{\psi}_{c,i}$ : notations génériques pour les fonctions de base (trial) et test de la $c$-ème cellule, respectivement.
+- $\varphi_{c,i}$, $\varphi_{c,i}^{\theta,P}$, $\varphi_{c,i}^{\theta,C}$ : la $i$-ème fonction de base (trial) dans la $c$-ème cellule, respectivement : analytique, un réseau de neurones (`Patchwise`), $n_\text{cells}$ réseaux de neurones (`Cellwise`)
 
 <!-- - $\mathcal{P}, \mathcal{P}_\theta$ : post-processing $\longrightarrow$ analytique, réseau de neurones -->
-<!-- - $\varphi_{c,i}$, $\varphi_{c,i}^{\theta,P}$, $\varphi_{c,i}^{\theta,C}$ : la $i$-ème fonction de base (trial) dans la $c$-ème cellule $\longrightarrow$ Taylor, un réseau de neurones (`Patchwise`), $n_\text{cells}$ réseaux de neurones (`Cellwise`) -->
 
 ## 1. Mapping
 
@@ -253,55 +258,99 @@ où $\bar{w}_i^s = \dfrac{N_\ell}{n_\text{cells}}\, w_i^s\, |\det J_g(T_{K_c}(\h
 - `children` : le `Mapping` (apprenable, mis à jour par l'optimiseur)
 - `aux_data` : tous les autres attributs statiques (`dim`, `n_cells`, `ref_quad`, indices de faces, etc.)
 
----
-<span style="color: red;">La suite est à modifier</span>
----
-
 ## 4. Bases
 
 > src/scimba_jax/linear_approximation/basis/general_bases.py
-> src/scimba_jax/linear_approximation/basis/analytic_bases.py
 
-On note :
+<!-- > src/scimba_jax/linear_approximation/basis/analytic_bases.py -->
 
-- $d$ : la dimension physique
-- $n_c$ : le nombre de cellules
-- $n_{\text{quad}}$ : le nombre de points de quadrature
-- $n_b$ : nombre de fonctions de base par cellule ($= (\text{order}+1)^d$, avec `order` le degré polynomial maximal par direction)
-- $n_u$ :  le nombre total de variables (`out_dim`)
+Commençons par introduire le nombre de variables dans le système PDE, noté $n_\text{out}$ (par exemple $n_\text{out}=1$ pour une équation scalaire, $n_\text{out}=d$ pour un système de Navier-Stokes incompressible).
 
-Chaque variable peut s'écrire sous la forme :
+On définit $n_b$ comme le nombre de fonctions de base par cellule (identique pour toutes les cellules). Pour un élément local $K_c$, on note la $i$-ème fonction de base (trial) de la $c$-ème cellule par $\bar{\varphi}_{c,i} : K_c \to \mathbb{R}^{n_{\text{out}}}$.
 
-$$ u(x) = \sum_{k=0}^{n_c-1} \sum_{i=0}^{n_b-1} u_{k,i} \bar{\varphi}_{k,i}(x) $$
+<!-- De façon générale, l'espace discret local peut s'écrire
 
-où $\bar{\varphi}_{k,i}(x)$ est la $i$-ème fonction de base (trial) dans la $k$-ème cellule. On notera $\varphi_{k,i}(x)$ pour la base analytique (Taylor) et $\varphi_{k,i}^{\theta,P}(x)$, $\varphi_{k,i}^{\theta,C}(x)$ pour les bases paramétrées (Patchwise, Cellwise).
+$$V_h(K_c) \subset \{f : K_c \to \mathbb{R}^{n_{\text{out}}}\}, \qquad V_h(K_c) = \mathrm{span}\{\bar{\varphi}_{c,0}, \ldots, \bar{\varphi}_{c,n_b-1}\}$$
 
-### Analytic Basis (Taylor)
+et la même écriture couvre naturellement un schéma DG ou EF ; la différence entre les deux se situe alors dans la structure de l'espace global et dans les contraintes de continuité, pas dans la définition locale de la base. -->
 
-<!-- $$ \varphi_{k,i}(x) = \frac{(x - x_k)^i}{i!} \quad \longrightarrow \quad (n_b, n_u). $$
-où $x_k$ est le centre de la cellule $k$,  -->
+### Types de bases
 
-Base en **espace $Q_{\text{order}-1}$** (produit tensoriel). Pour chaque multi-indice $\mathbf{p} = (p_0, \ldots, p_{d-1}) \in \{0, \ldots, \text{order}-1\}^d$ :
+Une fonction de base $\bar{\varphi}_{c,i}$ peut-être définie de trois manières différentes selon le `basis_type` choisi :
 
-$$ \varphi_{k,\mathbf{p}}(x) = \prod_{l=0}^{d-1} \frac{(x_l - x_{k,l})^{p_l}}{p_l!} \quad \longrightarrow \quad (n_b, n_u) $$
+| `basis_type` | Définition mathématique | Contrainte | Description |
+|---|---|---|---|
+| `"scalar"` | $K_c \to \mathbb{R}$ | `out_dim == 1` | base scalaire |
+| `"field"` | $K_c \to \mathbb{R}^d$ | `out_dim == dim` | base de champ vectoriel |
+| `"vec"` | $K_c \to \mathbb{R}^{n_{\text{out}}}$ | `out_dim > 1` | base vectorielle quelconque |
 
-où $x_k = (x_{k,0}, \ldots, x_{k,d-1})$ est le centre de la cellule $k$, et $n_b = \text{order}^d$.
+<!-- On note :
 
-En dimension 1 : $\varphi_{k,i}(x) = \dfrac{(x - x_k)^i}{i!}$ pour $i \in \{0, \ldots, \text{order}-1\}$.
+- $n_b = (\text{order}+1)^d$ : nombre de fonctions de base par cellule, avec `order` $= k$ le degré polynomial
+- $n_{\text{out}}$ : dimension de sortie d'une fonction de base
+- $n_u$ : si besoin, nombre de composantes de l'inconnue dans le système PDE
 
-> **Q vs P** : chaque direction contribue indépendamment des monômes jusqu'au degré $\text{order}-1$ → espace $Q_{\text{order}-1}$. L'espace $P_k$ (degré total $\leq k$) ne garderait que les multi-indices vérifiant $\sum_l p_l \leq k$, avec $\binom{k+d}{d}$ fonctions au lieu de $(\text{order})^d$.
+Un champ discret local peut s'écrire sous la forme :
+
+$$ u_h(x) = \sum_{c=0}^{n_{\text{cells}}-1} \sum_{i=0}^{n_b-1} U_{c,i}\, \bar{\varphi}_{c,i}(x) $$
+
+où $U_{c,i} \in \mathbb{R}^{n_{\text{out}}}$ et, dans le cas scalaire, cette écriture se réduit à une somme sur des coefficients réels.
+
+On notera $\varphi_{k,i}(x)$ pour la base analytique (Taylor) et $\varphi_{k,i}^{\theta,P}(x)$, $\varphi_{k,i}^{\theta,C}(x)$ pour les bases paramétrées. -->
+
+### Construction d'une base
+
+On considère qu'une base $\bar{\varphi}_{c,i}$ peut-être construites de trois manières différentes :
+
+- **Analytique (notée $\varphi_{c,i}$) :** définie par une formule analytique (ex. Taylor, Lagrange) 
+- **Patchwise (notée $\varphi_{c,i}^{\theta,P}$) :** définie par une base analytique multipliée par un même réseau de neurones $v_\theta$ partagé par toutes les cellules
+  $$ \varphi_{c,i}^{\theta,P}(x) = v_\theta(x)\, \varphi_{c,i}(x) $$
+- **Cellwise (notée $\varphi_{c,i}^{\theta,C}$) :** définie par une base analytique multipliée par un réseau de neurones $v_{c,\theta}$ spécifique à chaque cellule
+  $$ \varphi_{c,i}^{\theta,C}(x) = v_{c,\theta}(x)\, \varphi_{c,i}(x) $$
+
+Ces trois bases sont implémentées dans des classes distinctes (`AnalyticBasis`, `PatchwiseParametricBasis`, `CellwiseParametricBasis`) qui héritent de l'interface de `GeneralBasis`, en particulier :
+
+| Méthode | Signature | Retourne |
+|---|---|---|
+| `__call__(c, inputs)` | `c` : indice de cellule, `inputs` : $(n_{\text{quad}}, d)$ | $(n_{\text{quad}}, n_b, n_{\text{out}})$ |
+| `derivative(c, inputs)` | idem | $(n_{\text{quad}}, n_b, n_{\text{out}}, d)$ via `jax.jacobian` |
+
+<!-- ### Base analytique de Taylor (`AnalyticBasis`)
+
+Base en **espace $Q_k$** (produit tensoriel). Pour chaque multi-indice $\mathbf{p} = (p_0, \ldots, p_{d-1}) \in \{0, \ldots, k\}^d$ :
+
+$$ \varphi_{k,\mathbf{p}}(x) = \prod_{l=0}^{d-1} \frac{(x_l - x_{k,l})^{p_l}}{p_l!} $$
+
+où $x_k$ est le centroïde de la cellule $k$ et $n_b = (k+1)^d$.
+
+En dimension 1 : $\varphi_{k,i}(x) = \dfrac{(x - x_k)^i}{i!}$ pour $i \in \{0, \ldots, k\}$.
+
+Les multi-indices sont ordonnés par `itertools.product(range(order+1), repeat=dim)`.
+
+> **Q vs P** : l'espace $Q_k$ garde tous les multi-indices de $\{0,\ldots,k\}^d$ ($n_b = (k+1)^d$ fonctions). L'espace $P_k$ (degré total $\leq k$) n'en garde qu'une partie : les $\mathbf{p}$ vérifiant $\sum_l p_l \leq k$, soit $\binom{k+d}{d}$ fonctions.
+
+### Base de Lagrange (`AnalyticBasis`)
+
+Également en espace $Q_k$, avec $(k+1)^d$ nœuds équirépartis dans $[0,1]^d$ (utilisée pour les éléments finis, pas le DG). La base est évaluée dans l'espace de référence via le mapping inverse. -->
+
+### Fonctions tests
+
+De manière équivalente, on peut introduire les fonctions tests $\bar{\psi}_{c,i} : K_c \to \mathbb{R}^{n_{\text{out}}}$, qui peuvent être différentes des fonctions de base (Petrov-Galerkin) mais doivent avoir le même `out_dim` et `nb_basis`. 
+
+On considère que les fonctions tests sont construites de la même manière que les fonctions de base, c'est à dire qu'elles peuvent être analytiques, patchwise ou cellwise. Voir la table ci-dessous pour les différentes combinaisons possibles de bases trial et test :
+
+| Trial | Test |
+|---------|--------|
+|`AnalyticBasis`| `AnalyticBasis`|
+|`PatchwiseParametricBasis`| `AnalyticBasis`|
+|`PatchwiseParametricBasis`| `PatchwiseParametricBasis`|
+|`CellwiseParametricBasis`| `AnalyticBasis`|
+|`CellwiseParametricBasis`| `CellwiseParametricBasis`|
 
 
-**Dimensions :**
-* $x$ : pts de quadrature (global) $\quad \longrightarrow \quad (n_c, n_{\text{quad}}, d)$
-* $y = \{\varphi_{k,i}(x)\}$ : évaluation des fonctions de bases au pts de quadrature $\quad \longrightarrow (n_c, n_{\text{quad}}, n_b, n_u)$
-* $\partial_x y \quad \longrightarrow (n_c, n_{\text{quad}}, n_b, n_u, d)$
-
-### Bases paramétrées (Machine Learning)
-* **Patchwise Parametric Basis :** 
-  $$ \varphi_{k,i}^{\theta,P}(x) = v_\theta(x) \varphi_{k,i}(x) $$
-* **Cellwise Parametric Basis :**
-  $$ \varphi_{k,i}^{\theta,C}(x) = v_{k,\theta}(x) \varphi_{k,i}(x) $$
+---
+<span style="color: red;">La suite est à modifier</span>
+---
 
 ## 5. Post-processing
 
