@@ -1,8 +1,10 @@
 # Implémentation : Branche `scimba_jax_dg`
 
 ---
+Dans ce fichier, on présente l'implémentation commune aux deux méthodes : FEM et DG. Deux fichiers supplémentaires (`fem_implementation.md` et `dg_implementation.md`) détaillent les spécificités de chacune.
 
-On se place ici dans le contexte où on travaille sur un seul "patch" divisé en plusieurs cellules. L'élargissement à des domaines composés de plusieurs patchs sera abordée par la suite.
+On se place dans le contexte où on travaille **sur un seul "patch"** divisé en plusieurs cellules. L'élargissement à des domaines composés de plusieurs patchs sera abordée par la suite.
+
 
 ## Notations
 
@@ -54,7 +56,14 @@ On se place ici dans le contexte où on travaille sur un seul "patch" divisé en
 - $\bar{\varphi}_{c,i}, \bar{\psi}_{c,i}$ : notations génériques pour les fonctions de base (trial) et test de la $c$-ème cellule, respectivement.
 - $\varphi_{c,i}$, $\varphi_{c,i}^{\theta,P}$, $\varphi_{c,i}^{\theta,C}$ : la $i$-ème fonction de base (trial) dans la $c$-ème cellule, respectivement : analytique, un réseau de neurones (`Patchwise`), $n_\text{cells}$ réseaux de neurones (`Cellwise`)
 
-<!-- - $\mathcal{P}, \mathcal{P}_\theta$ : post-processing $\longrightarrow$ analytique, réseau de neurones -->
+### Variables discrètes
+
+- $u_h$ : variable discrète reconstruite à partir des DOFs linéaires et des fonctions de base
+
+### Post-processing
+
+- $\mathcal{P}, \mathcal{P}_\theta$ : post-processing, resêctivement : analytique, réseau de neurones
+- $\bar{u_h}$ : variable discrète post-processée
 
 ## 1. Mapping
 
@@ -262,8 +271,6 @@ où $\bar{w}_i^s = \dfrac{N_\ell}{n_\text{cells}}\, w_i^s\, |\det J_g(T_{K_c}(\h
 
 > src/scimba_jax/linear_approximation/basis/general_bases.py
 
-<!-- > src/scimba_jax/linear_approximation/basis/analytic_bases.py -->
-
 Commençons par introduire le nombre de variables dans le système PDE, noté $n_\text{out}$ (par exemple $n_\text{out}=1$ pour une équation scalaire, $n_\text{out}=d$ pour un système de Navier-Stokes incompressible).
 
 On définit $n_b$ comme le nombre de fonctions de base par cellule (identique pour toutes les cellules). Pour un élément local $K_c$, on note la $i$-ème fonction de base (trial) de la $c$-ème cellule par $\bar{\varphi}_{c,i} : K_c \to \mathbb{R}^{n_{\text{out}}}$.
@@ -315,6 +322,13 @@ Ces trois bases sont implémentées dans des classes distinctes (`AnalyticBasis`
 | `__call__(c, inputs)` | `c` : indice de cellule, `inputs` : $(n_{\text{quad}}, d)$ | $(n_{\text{quad}}, n_b, n_{\text{out}})$ |
 | `derivative(c, inputs)` | idem | $(n_{\text{quad}}, n_b, n_{\text{out}}, d)$ via `jax.jacobian` |
 
+### Base analytique
+
+> src/scimba_jax/linear_approximation/basis/analytic_bases.py
+
+<span style="color: blue;">Pour le moment, deux types de bases analytiques sont implémentés : Taylor (DG) et Lagrange (FEM). On detaillera leur construction dans les fichiers dédiés à chacune des méthodes. 
+</span>
+
 <!-- ### Base analytique de Taylor (`AnalyticBasis`)
 
 Base en **espace $Q_k$** (produit tensoriel). Pour chaque multi-indice $\mathbf{p} = (p_0, \ldots, p_{d-1}) \in \{0, \ldots, k\}^d$ :
@@ -347,45 +361,43 @@ On considère que les fonctions tests sont construites de la même manière que 
 |`CellwiseParametricBasis`| `AnalyticBasis`|
 |`CellwiseParametricBasis`| `CellwiseParametricBasis`|
 
+### Enregistrement comme pytree JAX
+
+Les bases sont enregistrées comme pytrees JAX (classes `AnalyticBasis`, `PatchwiseParametricBasis`, `CellwiseParametricBasis`) avec une séparation entre :
+- `children` : les objets potentiellement apprenables et/ou différentiables (en particulier `mesh`, puis les modules `eqx.Module` quand présents)
+- `aux_data` : les métadonnées statiques (`nb_basis`, `out_dim`, `basis_type`, `local_basis`, flags et callables statiques)
+
+Pour `PatchwiseParametricBasis` et `CellwiseParametricBasis`, le module paramétrique n'est placé dans `children` que lorsqu'il est effectivement présent comme module Equinox ; sinon il est stocké dans `aux_data`.
+
+## 5. Variables discrètes
+
+<span style="color: blue;">
+Pour les deux méthodes DG et EF, la variable discrète est définie de manière similaire à partir des fonctions de base et des DOFs linéaires. La différence entre les deux méthodes réside dans la structure globale de l'espace discret et les contraintes de continuité. Ces points seront détaillés dans les fichiers dédiés à chacune des méthodes.
+</span>
+
+Dans la suite du document, on notera $u_h$ la variable discrète définie de manière globale sur $\Omega$ (avec indicatrices).
+
+## 6. Post-processing
+
+> src/scimba_jax/linear_approximation/variables/postprocessing.py
+
+Le post-processing, notéée $\mathcal{P}$, est un opérateur qui agit sur la variable discrète reconstruite à partir des DOFs. Cet opérateur peut-être une fonction analytique (linéaire ou non-linéaire) ou un réseau de neurones, un `eqx.Module` (non-linéaire).
+
+On peut considérer deux types de processings :
+- **Local** : la valeur post-processée en un point $x$ dépend uniquement de la valeur reconstruite $u_h|_{K_c}(x)$ (dans la cellule $K_c$ contenant $x$), c'est-à-dire que la solution post-processée s'écrit :
+$$\bar{u_h}(x) = \mathcal{P}(u_h|_{K_c}(x), x), \qquad x \in K_c.$$
+- **Global** <span style="color: red;">(Non implémenté)</span> : la valeur post-processée en un point $x$ dépend de la valeur reconstruite $u_h$ sur l'ensemble du domaine $\Omega$, c'est-à-dire que la solution post-processée s'écrit :
+$$\bar{u_h}(x) = \mathcal{P}(u_h(x), x), \qquad x \in \Omega.$$
+
+### Enregistrement comme pytree JAX
+
+`LocalPostProcessing` est enregistré comme pytree JAX avec :
+- `children` : l'opérateur `op` uniquement lorsqu'il s'agit d'un module `eqx.Module` (cas apprenable)
+- `aux_data` : `local`, `linear`, `input_dim`, `output_dim`, et `op` lorsqu'il est statique (callable analytique)
 
 ---
 <span style="color: red;">La suite est à modifier</span>
 ---
-
-## 5. Post-processing
-
-> src/scimba_jax/linear_approximation/variables/postprocessing.py
-
-- `LocalPostProcessing` : post-processing local sur chaque cellule
-- Peut être linéaire ou non, peut-être analytique ou réseau de neurones
-
-## 6. Variables
-
-> src/scimba_jax/linear_approximation/variables/variables_dg.py
-
-$$ u_h(x) = \sum_{k=0}^{n_c-1} \sum_{i=0}^{n_b-1} u_{k,i} \bar{\varphi}_{k,i}(x) \mathbb{1}_{\{x \in C_k\}} $$
-
-### Évaluation locale
-
-$x \in C_k$, avec $k \in [\![0, n_c-1]\!]$.
-$$ u_h(x) = \sum_{i=0}^{n_b-1} u_{k,i} \bar{\varphi}_{k,i}(x) $$
-
-### Projection de $f$ sur l'espace DG
-$\hookrightarrow$ Chercher les $u_{k,i}$ tels que $u_h$ soit la fonction approchée de $f$.
-
-On considère les mêmes bases trial et test.
-
-Pour $C_k$ :
-$$ \int_{C_k} (f - u_h) \bar{\varphi}_{k,j} = 0 \quad \forall j $$
-
-$$ \underbrace{\int_{C_k} f \cdot \bar{\varphi}_{k,j}}_{b_j} = \sum_{i=0}^{n_b-1} u_{k,i} \underbrace{\int_{C_k} \bar{\varphi}_{k,i} \cdot \bar{\varphi}_{k,j}}_{M_{i,j}} $$
-
-$\hookrightarrow$ **Projecteur local :** $$ M_k U_k = b_k $$
-
-**Dimensions :**
-
-- `x = m.evaluate_mesh_points()` : pts de quadrature (global) $\quad \longrightarrow \quad (n_c, n_{\text{quad}}, d)$
-- `variables.evaluate_quad(x)` : évaluation des variables sur les pts de quadrature $\quad \longrightarrow \quad (n_c, n_{\text{quad}}, n_u)$.
 
 ## 7. Fonctions paramétrées (`ParamFunc`)
 
