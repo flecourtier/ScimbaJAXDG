@@ -17,44 +17,62 @@ On se place dans le contexte où on travaille **sur un seul "patch"** divisé en
 
 ### Mapping
 
-- $g, g_\theta$ : mapping du maillage (composition de $m$ fonctions), analytique ou réseau de neurones
+- $g, g_\theta$ : mapping du maillage (composition de $m$ fonctions), respectivement : analytique ou réseau de neurones
 - $m$ : nombre de fonctions composées dans le mapping
 
 ### Quadrature
 
 - $q$ : ordre de quadrature par direction
-- $n_\text{quad} = q^d$ : nombre total de points de quadrature
+- $n_\text{quad} = q^d$ : nombre total de points de quadrature volumique
+- $n_\text{quad}^s = q^{d-1}$ : nombre total de points de quadrature surfacique
 
 ### Maillage
 
-- $n_\text{cells} = \prod_{\ell=0}^{d-1} N_\ell$ : nombre total de cellules (`n_cells_total`)
+- $\mathcal{T}_h$ : maillage uniforme du domaine logique $[0,1]^d$
+- $h$ : taille caractéristique du maillage <span style="color: red;">-> à définir</span>
+
+#### Cellules
+
 - $N_\ell$ : nombre de cellules dans la direction $\ell$
 - $N_\text{cells} = (N_0, \ldots, N_{d-1})$ : tuple du nombre de cellules par direction (`n_cells`)
+- $n_\text{cells} = \prod_{\ell=0}^{d-1} N_\ell$ : nombre total de cellules (`n_cells_total`)
+- $K_\text{ref} = [0,1]^d$ : élément de référence (cellule)
+- $K_c$ : la $c$-ème cellule du maillage,
+    - $c \in [0, n_\text{cells} - 1]$ : indexation plate
+    - $\bar{c}(c) = (\bar{c}_0, \ldots, \bar{c}_{d-1})$ : indexation multi-dimensionnelle de la cellule $K_c$ avec $\bar{c}_\ell \in \{0, \ldots, N_\ell - 1\}$
+- $T_{K_c}$ : transformation géométrique de l'élément de référence vers une cellule $K_c$
+- $\Phi_{K_c} = g \circ T_{K_c}$ : composition du mapping et de la transformation géométrique, passage de l'élément de référence au domaine physique
+
+#### Faces
+
 - $n_\text{faces}$ : nombre total de faces (`n_faces`)
 - $n_{f,\ell}$ : nombre de faces du groupe $\ell$ (normales à la direction $\ell$)
-- $\mathcal{T}_h$ : maillage uniforme du domaine logique $[0,1]^d$
-- $K_\text{ref} = [0,1]^d$ : élément de référence
-- $K_c$ : la $c$-ème cellule du maillage, 
-    - $c \in [0, n_\text{cells} - 1]$ : indexation plate
-    - $\bar{c} = (c_0, \ldots, c_{d-1})$ : indexation multi-dim (avec $c_\ell \in [0, N_\ell - 1]$)
-- $\hat{\xi}$, $\xi$, $X$ : points dans les espaces de référence, logique et physique respectivement
-- $\hat{\xi}_i$, $w_i$ : $i$-ème point et poids de quadrature volumique sur l'élément de référence
-- $\hat{\xi}_i^s$, $w_i^s$ : $i$-ème point et poids de quadrature surfacique sur la face de référence
-- $\bar{w}_i$, $\bar{w}_i^s$ : poids corrigés pour la cellule $K_c$ et la face $F_k$ respectivement 
-- $T_{K_c}$ : transformation géométrique de l'élément de référence vers une cellule $K_c$
-- $\Phi = g \circ T_{K_c}$ : composition du mapping et de la transformation géométrique, soit le passage de l'élément de référence au domaine physique
-- $F_\text{ref} = [0,1]^{d-1}$ : face de référence (hyperplan dans $[0,1]^d$)
-- $F_k$ : la $k$-ème face du maillage
+- $F_{\text{ref},\ell} \subset [0,1]^{d}$ : face de référence (hyperplan de $K_\text{ref}$) associé à la direction $\ell$
+- $F_k$ : la $k$-ème face du maillage,
     - $k \in [0, n_\text{faces} - 1]$ : indexation plate
-    - $\bar{k} = (k_0, \ldots, k_{d-1})$ : indexation multi-dim (avec $k_\ell \in [0, N_\ell]$) pour un groupe de faces $\ell$ fixé
+    - $\bar{k}(k) = (\ell; \bar{k}_0, \ldots, \bar{k}_{d-1})$ : indexation multi-dimensionnelle pour une face $F_k$ dans le groupe $\ell$ avec 
+    $$\bar{k}_\ell \in \{0,\ldots,N_\ell\}, \quad \bar{k}_j \in \{0,\ldots,N_j-1\} \text{ pour } j \in \{0, \ldots, d-1\} \setminus \{\ell\}$$
+- $T_{F_k}$ : transformation géométrique de la face de référence vers une face $F_k$ (associée au groupe $\ell$)
+- $\Phi_{F_k} = g \circ T_{F_k}$ : composition du mapping et de la transformation géométrique, passage de la face de référence au domaine physique
+
+#### Points et transformations géométriques
+
+Tous les points de quadrature (volumique ou surfacique) sont définis dans un espace $\mathbb{R}^d$ (même pour les points surfaciques, où une coordonnée est fixée à $0$).
+
+- $\hat{\xi}$, $\xi$, $X$ : points dans les espaces de référence, logique et physique (respectivement)
+- $\hat{\xi}_i$ : $i$-ème point de quadrature sur l'élément de référence $K_\text{ref}$
+- $w_i$ : $i$-ème poids de quadrature sur l'élément de référence $K_\text{ref}$
+- $\hat{\xi}_{\ell,i}^s$ : $i$-ème point de quadrature surfacique sur la face de référence $F_{\text{ref},\ell}$ (l-ème coordonnée fixée à $0$)
+- $w_i^s$ : $i$-ème poids de quadrature surfacique sur la face de référence $F_{\text{ref},\ell}$ (indépendant de $\ell$)
+- $\bar{w}_i$, $\bar{w}_i^s$ : poids corrigés pour une cellule $K_c$ et une face $F_k$ (respectivement) 
 
 ### Bases
 
 - $n_b$ : nombre de fonctions de base par cellule (`nb_basis`)
 - $n_{\text{out}}$ : dimension de sortie, nombre de variables dans le système (`out_dim`) 
     <span style="color: red;">-> à clarifier</span>
-- $\bar{\varphi}_{c,i}, \bar{\psi}_{c,i}$ : notations génériques pour les fonctions de base (trial) et test de la $c$-ème cellule, respectivement.
-- $\varphi_{c,i}$, $\varphi_{c,i}^{\theta,P}$, $\varphi_{c,i}^{\theta,C}$ : la $i$-ème fonction de base (trial) dans la $c$-ème cellule, respectivement : analytique, un réseau de neurones (`Patchwise`), $n_\text{cells}$ réseaux de neurones (`Cellwise`)
+- $\bar{\varphi}_{c,i}, \bar{\psi}_{c,i}$ : notations génériques pour la $i$-ème fonction de base de la $c$-ème cellule, respectivement : trial et test
+- $\varphi_{c,i}$, $\varphi_{c,i}^{\theta,P}$, $\varphi_{c,i}^{\theta,C}$ : la $i$-ème fonction de base (trial) dans la $c$-ème cellule, respectivement : analytique, patchwise (un réseau de neurones), cellwise ($n_\text{cells}$ réseaux de neurones)
 
 ### Variables discrètes
 
@@ -62,7 +80,7 @@ On se place dans le contexte où on travaille **sur un seul "patch"** divisé en
 
 ### Post-processing
 
-- $\mathcal{P}, \mathcal{P}_\theta$ : post-processing, resêctivement : analytique, réseau de neurones
+- $\mathcal{P}, \mathcal{P}_\theta$ : post-processing, respectivement : analytique, réseau de neurones
 - $\bar{u_h}$ : variable discrète post-processée
 
 ## 1. Mapping
@@ -75,7 +93,7 @@ Le mapping $g$ est utilisé pour transformer les points de quadrature du domaine
 
 Un `Mapping` est une composition ordonnée de mapping :
 
-$$g = g_m \circ g_{m-1} \circ \cdots \circ g_1$$
+$$g(\xi) = g_m \circ g_{m-1} \circ \cdots \circ g_1(\xi)$$
 
 avec $m$ le nombre de fonctions composées où chaque $g_j$, $j \in \{1, \ldots, m\}$, est un mapping inversible d'un des deux types suivants :
 
@@ -84,17 +102,31 @@ avec $m$ le nombre de fonctions composées où chaque $g_j$, $j \in \{1, \ldots,
 | `InvertibleFunction` | Mapping inversible analytique |
 | `InvertibleNet` | Réseau inversible du module Equinox (`eqx.Module`) |
 
+On suppose donc que chaque mapping $g_j$ est inversible. On considère également que le mapping est bien orienté, c'est-à-dire que le déterminant de son jacobien est strictement positif partout dans le domaine logique.
+
 L'application inverse de $g$ est donc donnée par :
 
-$$g^{-1} = g_1^{-1} \circ g_2^{-1} \circ \cdots \circ g_m^{-1}.$$
+$$g^{-1}(X) = g_1^{-1} \circ g_2^{-1} \circ \cdots \circ g_m^{-1}(X).$$
 
 ### Calcul du Jacobien
 
-<span style="color: red;">A COMPLETER</span>
+Notons $y_0 = \xi$ et $y_j = g_j(y_{j-1})$, $j \in \{1, \ldots, m\}$ les points intermédiaires issus de l'application successive des fonctions composées.
 
-### Méthodes disponibles
+Le Jacobien de la composition $g = g_m \circ \cdots \circ g_1$ est obtenu par la règle de la chaîne :
 
-Les méthodes disponibles pour le `Mapping` sont : mapping direct, inverse, jacobien, jacobien inverse, déterminant du jacobien, déterminant du jacobien inverse.
+$$J_g(\xi) = J_{g_m}(y_{m-1}) \cdot J_{g_{m-1}}(y_{m-2}) \cdot \ldots \cdot J_{g_1}(y_0)$$
+
+De même, le Jacobien de l'inverse $g^{-1} = g_1^{-1} \circ \cdots \circ g_m^{-1}$ est calculé par la même règle de la chaîne, mais dans l'ordre inverse :
+
+$$J_{g^{-1}}(X) = J_{g_1^{-1}}(y_1) \cdot J_{g_2^{-1}}(y_2) \cdot \ldots \cdot J_{g_m^{-1}}(y_m)$$
+
+On en déduit que le déterminant du Jacobien de la composition est le produit des déterminants des Jacobien intermédiaires :
+
+$$|\det J_g(\xi)| = \prod_{j=1}^m |\det J_{g_j}(y_{j-1})|$$
+
+et de même pour l'inverse :
+
+$$|\det J_{g^{-1}}(X)| = \prod_{j=1}^m |\det J_{g_j^{-1}}(y_j)|$$
 
 ### Enregistrement comme pytree JAX
 
@@ -112,7 +144,15 @@ La classe `UnitSquareTensorized` construit une quadrature par produit tensoriel 
 
 $$ \int_{K_\text{ref}} f(\hat{\xi})\, d\hat{\xi} \approx \sum_{i=1}^{n_{\text{quad}}} w_i\, f(\hat{\xi}_i) $$
 
-où $n_{\text{quad}} = q^d$ est le nombre total de points volumiques, $w_i$ sont les poids de quadrature et $\hat{\xi}_i$ les points de quadrature.
+où $n_{\text{quad}} = q^d$ est le nombre total de points volumiques avec $q$ l'ordre de quadrature, $w_i$ et $\hat{\xi}_i$ sont les poids et les points de quadrature.
+
+De la même manière, elle construit une quadrature par produit tensoriel sur toutes les faces de l'élément de référence. Pour la suite, on s'intéressera uniquement aux faces "gauche/basse" de chaque direction. Pour celà, on va définir une face de référence $F_{\text{ref},\ell}$ pour chaque direction $\ell\in\{0, \ldots, d-1\}$, correspondant à l'hyperplan de $K_\text{ref}$ où la $\ell$-ème coordonnée est fixée à $0$, autrement dit :
+$$F_{\text{ref},\ell} = \{\hat{\xi} = (\hat{\xi}_0, \hat{\xi}_1, \ldots, \hat{\xi}_{d-1}) \in [0,1]^d : \hat{\xi}_\ell = 0\}$$
+Ainsi, pour une face $F_{\text{ref},\ell}$ de référence associée à la direction $\ell$, la quadrature par produit tensoriel est donnée par :
+
+$$ \int_{F_{\text{ref},\ell}} f(\hat{\xi})\, d\hat{\xi} \approx \sum_{i=1}^{n_{\text{quad}}^s} w_i^s\, f(\hat{\xi}_{\ell,i}^s) $$
+
+où $n_{\text{quad}}^s = q^{d-1}$ est le nombre total de points surfaciques pour une face de référence (indépendant de $\ell$), $\hat{\xi}_{\ell,i}^s$ sont les points de quadrature surfacique et $w_i^s$ les poids de quadrature surfacique (également indépendants de $\ell$).
 
 ### Construction des points et poids
 
@@ -130,19 +170,25 @@ Ces points et poids 1D sont ensuite tensorisés pour construire les points et po
 
 > src/scimba_jax/linear_approximation/meshes/mesh.py
 
-### Structure
+### Description
 
-On définit un maillage uniforme $\mathcal{T}_h$ sur $[0,1]^d$, découpé en $N_\ell$ cellules dans la direction $\ell \in \{0, \ldots, d-1\}$.
+On définit un maillage uniforme $\mathcal{T}_h$ sur $[0,1]^d$, découpé en $N_\ell$ cellules dans la direction $\ell \in \{0, \ldots, d-1\}$ où $h$ représente la taille caractéristique du maillage.
 
-On définit $N_\text{cells} = (N_0, \ldots, N_{d-1})$ comme le tuple du nombre de cellules par direction et $n_\text{cells} = \prod_{\ell=0}^{d-1} N_\ell$ le nombre total de cellules. 
+On définit $N_\text{cells} = (N_0, \ldots, N_{d-1})$ comme le tuple du nombre de cellules par direction et $n_\text{cells} = \prod_{\ell=0}^{d-1} N_\ell$ comme le nombre total de cellules. 
 
-Chaque cellule $K_c$ (où $c$ est l'indice de la cellule), définie comme un hypercube de taille $1/N_\ell$ dans la direction $\ell$ peut être identifiée par deux représentations équivalentes :
+Chaque cellule $K_c$ (où $c$ est l'indice de la cellule), définie comme un hypercube de taille $1/N_\ell$ dans la direction $\ell$, peut être identifiée par deux représentations équivalentes :
 
 | Indexation | Notation | Valeurs | Conversion |
 |---|---|---|---|
 | Plate (`fidx`) | $c \in [0, n_\text{cells} - 1]$ | entier | `_midx_to_fidx` |
-| Multi-dim (`midx`) | $\bar{c} = (c_0, \ldots, c_{d-1})$ avec $c_\ell \in [0, N_\ell - 1]$ | tuple | `_fidx_to_midx` |
+| Multi-dim (`midx`) | $\bar{c}(c) = (\bar{c}_0, \ldots, \bar{c}_{d-1})$ avec $\bar{c}_\ell \in \{0,\dots,N_\ell - 1\}$ | tuple de taille $(d,)$ | `_fidx_to_midx` |
 
+> **Exemple :** pour un maillage 3D avec $N_\text{cells} = (2, 2, 3)$ cellules.
+> 
+> <img src="images/cells.png" width="500">
+>
+> - $c=0$ (première cellule) $\rightarrow \bar{c}(0) = (0, 0, 0)$
+> - $c=11$ (dernière cellule) $\rightarrow \bar{c}(11) = (1, 1, 2)$
 
 **Faces :** Les faces sont des hypersurfaces $(d-1)$-dimensionnelles, organisées en $d$ groupes selon leur axe normal. Les faces du groupe $\ell$ sont perpendiculaires à cette même direction ce qui signifie que chaque couche (correspondant à une position fixée sur l'axe $\ell$) contient $\prod_{j \neq \ell} N_j$ faces, et il y a $N_\ell + 1$ couches, soit au total $n_{f,\ell}$ faces dans le groupe $\ell$ :
 
@@ -152,10 +198,10 @@ Ainsi le nombre total de faces est la somme sur les groupes :
 
 $$n_\text{faces} = \sum_{\ell=0}^{d-1} n_{f,\ell} = \sum_{\ell=0}^{d-1} (N_\ell + 1) \cdot \prod_{j \neq \ell} N_j$$
 
-> **Exemple :** pour un maillage 3D avec $N_\text{cells} = (2, 2, 3)$ cellules.
-> - $\ell = 0$ (axe $x$) : $n_{f,0} = (2+1) \cdot (2 \cdot 3) = 18$ faces (bleu)
-> - $\ell = 1$ (axe $y$) : $n_{f,1} = (2+1) \cdot (2 \cdot 3) = 18$ faces (rouge)
-> - $\ell = 2$ (axe $z$) : $n_{f,2} = (3+1) \cdot (2 \cdot 2) = 16$ faces (vert)
+> **Exemple :** pour le même maillage 3D avec $N_\text{cells} = (2, 2, 3)$ cellules.
+> - $\ell = 0$ (axe $x$) : $\quad n_{f,0} = (2+1) \cdot (2 \cdot 3) = 18$ faces $\quad$ (bleu)
+> - $\ell = 1$ (axe $y$) : $\quad n_{f,1} = (2+1) \cdot (2 \cdot 3) = 18$ faces $\quad$ (rouge)
+> - $\ell = 2$ (axe $z$) : $\quad n_{f,2} = (3+1) \cdot (2 \cdot 2) = 16$ faces $\quad$ (vert)
 > - total : $n_\text{faces} = 18 + 18 + 16 = 52$ faces
 > 
 > <img src="images/faces_x.png" width="300"> <img src="images/faces_y.png" width="300"> <img src="images/faces_z.png" width="300">
@@ -165,12 +211,13 @@ De manière équivalente aux cellules, chaque face $F_k$ (où $k$ est l'indice d
 | Indexation | Notation | Valeurs | Conversion |
 |---|---|---|---|
 | Plate (`face_fidx`) | $k \in [0, n_\text{faces} - 1]$ | entier | / |
-| Multi-dim (`face_midx`) + groupe $\ell$ | $\bar{k} = (k_0, \ldots, k_{d-1})$ avec $k_\ell \in [0, N_\ell]$ | tuple | `_face_fidx_to_face_midx_and_face_type` |
+| Multi-dim (`face_midx`) | $\bar{k}(k) = (\ell; \bar{k}_0, \ldots, \bar{k}_{d-1})$ | tuple de taille $(d+1,)$ |  `_face_fidx_to_face_midx_and_face_type` |
+| | avec  $\bar{k}_\ell \in \{0, \ldots, N_\ell\}$ et $\bar{k}_j \in \{0, \ldots, N_j - 1\}$ pour $j \neq \ell$ | | |
 
 > **Exemple :** pour le même maillage 3D avec $N_\text{cells} = (2, 2, 3)$ cellules.
-> - $k=0$ (première face du groupe $\ell=0$) $\rightarrow \bar{k} = (0, 0, 0)$
-> - $k=17$ (dernière face du groupe $\ell=0$) $\rightarrow \bar{k} = (2, 1, 2)$
-> - $k=18$ (première face du groupe $\ell=1$) $\rightarrow \bar{k} = (0, 0, 0)$
+> - $k=0$ (première face du groupe $\ell=0$) $\rightarrow \bar{k}(0) = (0; 0, 0, 0)$
+> - $k=17$ (dernière face du groupe $\ell=0$) $\rightarrow \bar{k}(17) = (0; 2, 1, 2)$
+> - $k=18$ (première face du groupe $\ell=1$) $\rightarrow \bar{k}(18) = (1; 0, 0, 0)$
 
 Les faces sont ensuite classées en deux catégories :
 - **Internes** (`internal_faces_idx`) : couches intermédiaires ($1 \leq$ position $\leq N_\ell - 1$), partagées par deux cellules. 
@@ -182,20 +229,17 @@ La fonction `_face_fidx_to_neighbors_fidx` retourne les indices plats des deux c
 
 ### Chaîne de mapping
 
+On va définir ici deux chaînes de mapping (volumique et surfacique) pour transformer les points de quadrature de l'élément de référence ou de la face de référence vers le domaine physique.
+
+#### Mapping volumique
+
 On note $T_{K_c} : K_\text{ref} \to K_c$ la transformation affine qui envoie l'élément de référence sur la cellule $K_c$ :
 
-$$\xi = T_{K_c}(\hat{\xi}) = \frac{\hat{\xi} + \bar{c}}{N_\text{cells}}, \qquad \hat{\xi} = T_{K_c}^{-1}(\xi) = \xi \cdot N_\text{cells} - \bar{c}$$
+$$\xi = T_{K_c}(\hat{\xi}) = \frac{\hat{\xi} + \bar{c}(c)}{N_\text{cells}}, \qquad \hat{\xi} = T_{K_c}^{-1}(\xi) = \xi \cdot N_\text{cells} - \bar{c}(c)$$
 
 où la division et la multiplication se font composante par composante.
 
-> **Remarque :** En développant composante par composante, on a pour la $\ell$-ème composante :
-> $$(T_{K_c}(\hat{\xi}))_\ell = \frac{\hat{\xi}_\ell + c_\ell}{N_\ell}$$
-> Son jacobien est donc une matrice diagonale :
-> $$J_{T_{K_c}} = \text{diag}\left(\frac{1}{N_0}, \frac{1}{N_1}, \ldots, \frac{1}{N_{d-1}}\right)$$
-> Et son déterminant :
-> $$|\det J_{T_{K_c}}| = \prod_{\ell=0}^{d-1} \frac{1}{N_\ell} = \frac{1}{n_\text{cells}}$$
-
-Les points de quadrature traversent alors trois espaces successifs :
+Les points de quadrature volumiques traversent alors trois espaces successifs :
 
 $$\hat{\xi} \in K_\text{ref} = [0,1]^d \xrightarrow{\ T_{K_c}\ } \xi \in K_c \subset [0,1]^d \xrightarrow{\ g\ } X \in \Omega$$
 
@@ -203,47 +247,84 @@ Autrement dit, les points de quadrature sont d'abord transformés de l'élément
 
 La première flèche est réalisée par `_unit_hypercube_to_cell`, la seconde par `mapping.local_mapping`.
 
-### Normales physiques (formule de Nanson)
+> **Remarque :** En développant composante par composante, on a pour la $j$-ème composante :
+> $$(T_{K_c}(\hat{\xi}))_j = \frac{\hat{\xi}_j + \bar{c}_j}{N_j}$$
+> Son jacobien est donc une matrice diagonale (constante par rapport à $\hat{\xi}$) :
+> $$J_{T_{K_c}} = \text{diag}\left(\frac{1}{N_0}, \frac{1}{N_1}, \ldots, \frac{1}{N_{d-1}}\right)$$
+> Et son déterminant (constant par rapport à $\hat{\xi}$) est donc :
+> $$|\det J_{T_{K_c}}| = \prod_{j=0}^{d-1} \frac{1}{N_j} = \frac{1}{n_\text{cells}}$$
 
-La formulation DG requiert la normale sortante unitaire sur chaque face dans le domaine physique $\Omega$. Dans le domaine logique, la normale d'une face du groupe $\ell$ est simplement le vecteur canonique $e_\ell = (0, \ldots, 0, 1, 0, \ldots, 0)$ avec un $1$ à la position $\ell$. On obtient la normale physique via la formule de Nanson :
+#### Mapping "surfacique"
 
-$$n_{\text{phys}} = \frac{J_g(\xi)^{-T}\, e_\ell}{\|J_g(\xi)^{-T}\, e_\ell\|}$$
+Pour les faces, on procède de manière analogue. On note $T_{F_k} : F_{\text{ref},\ell} \to F_k$ la transformation qui envoie la face de référence sur la face $F_k$ (associée au groupe $\ell$) :
+
+$$\xi = T_{F_k}(\hat{\xi}) = \frac{\hat{\xi} + \bar{k}}{N_\text{cells}}$$
+
+où la division et la multiplication se font également composante par composante.
+
+Les points de quadrature surfaciques (vivant dans un hyperplan de l'espace volumique) traversent alors trois espaces successifs :
+
+$$\hat{\xi} \in F_{\text{ref},\ell} \subset [0,1]^d \xrightarrow{\ T_{F_k}\ } \xi \in F_k \subset [0,1]^d \xrightarrow{\ g\ } X \in \Omega$$
+
+Comme pour le mapping volumique, les points de quadrature sont d'abord transformés de la face de référence à la face correspondante du maillage logique (via une transformation affine), puis du maillage logique au domaine physique via le mapping $g$.
+
+La première flèche est réalisée par `_unit_hyperplane_to_face`, la seconde par `mapping.local_mapping`.
+
+> **Remarque :** En développant composante par composante, on a pour la $j$-ème composante :
+> $$(T_{F_k}(\hat{\xi}))_j = \frac{\hat{\xi}_j + \bar{k}_j}{N_j}$$
+> Son jacobien (en tant que mapping $[0,1]^d \to [0,1]^d$) est une matrice diagonale :
+> $$J_{T_{F_k}} = \text{diag}\left(\frac{1}{N_0}, \frac{1}{N_1}, \ldots, \frac{1}{N_{d-1}}\right)$$
+> Cependant, l'intégrale surfacique porte sur une variété de dimension $d-1$. On définit le jacobien tangentiel comme la restriction de $J_{T_{F_k}}$ aux directions tangentielles $j \neq \ell$, obtenu en restreignant $J_{T_{F_k}}$ aux colonnes $j \neq \ell$ (les directions tangentes à $F_{\text{ref},\ell}$) :
+> $$J_{T_{F_k}}^{\text{tan}} = \text{diag}\left(\frac{1}{N_j}\right)_{j \neq \ell} \in \mathbb{R}^{d \times (d-1)}$$
+> Les colonnes étant orthogonales, le déterminant de Gram (généralisant la notion de déterminant aux matrices rectangulaires) vaut :
+> $$|\det J_{T_{F_k}}^{\text{tan}}|=\sqrt{\det\left((J_{T_{F_k}}^{\text{tan}})^T J_{T_{F_k}}^{\text{tan}}\right)} = \prod_{j \neq \ell} \frac{1}{N_j} = \frac{N_\ell}{n_\text{cells}}$$
+
+### Intégrations volumique et surfacique
+
+#### Normales physiques (formule de Nanson)
+
+Les méthodes numériques requiert les normales sortantes unitaires sur chaque face (internes et externes pour DG, uniquement externes pour EF) dans le domaine physique $\Omega$. Dans le domaine logique, la normale (positive) d'une face du groupe $\ell$ est simplement le vecteur canonique $e_\ell = (0, \ldots, 0, 1, 0, \ldots, 0)$ avec un $1$ à la position $\ell$. On obtient la normale physique (positive) via la formule de Nanson :
+
+$$n_{\text{phys}} = \text{sign}(\det J_g) \frac{J_g(\xi)^{-T}\, e_\ell}{\|J_g(\xi)^{-T}\, e_\ell\|}$$
 
 avec $\|\cdot\|$ la norme euclidienne.
 
-### Intégrations volumiques ($d$-dimensions)
+#### Intégrations volumique ($d$-dimensions)
 
-On note $\Phi = g \circ T_{K_c} : K_\text{ref} \to \Omega$ la composition des deux transformations, soit le passage de l'élément de référence au domaine physique. 
+On note $\Phi_{K_c} = g \circ T_{K_c} : K_\text{ref} \to \Omega$ la composition des deux transformations volumiques, soit le passage de l'élément de référence au domaine physique. 
 
 Son jacobien est donné par la règle de la chaîne :
 
-$$|\det J_{\Phi}(\hat{\xi})| = |\det J_g(T_{K_c}(\hat{\xi}))| \cdot |\det J_{T_{K_c}}| = \frac{1}{n_\text{cells}}\,|\det J_g(T_{K_c}(\hat{\xi}))|$$
+$$|\det J_{\Phi_{K_c}}(\hat{\xi})| = |\det J_g(T_{K_c}(\hat{\xi}))| \cdot |\det J_{T_{K_c}}| = \frac{1}{n_\text{cells}}\,|\det J_g(T_{K_c}(\hat{\xi}))|$$
 
 Le changement de variable sur la cellule physique $g(K_c)$ se fait en deux étapes :
 
-$$\int_{g(K_c)} f(X)\, dX \underbrace{=}_{X = g(\xi)} \int_{K_c} f(g(\xi))\, |\det J_g(\xi)|\, d\xi \underbrace{=}_{\xi = T_{K_c}(\hat{\xi})} \frac{1}{n_\text{cells}} \int_{K_\text{ref}} f(\Phi(\hat{\xi}))\, |\det J_g(T_{K_c}(\hat{\xi}))|\, d\hat{\xi}$$
+$$\int_{g(K_c)} f(X)\, dX \underbrace{=}_{X = g(\xi)} \int_{K_c} f(g(\xi))\, |\det J_g(\xi)|\, d\xi \underbrace{=}_{\xi = T_{K_c}(\hat{\xi})} \frac{1}{n_\text{cells}} \int_{K_\text{ref}} f(\Phi_{K_c}(\hat{\xi}))\, |\det J_g(T_{K_c}(\hat{\xi}))|\, d\hat{\xi}$$
 
 Discrétisé par quadrature sur $K_\text{ref}$ (points $\hat{\xi}_i$, poids $w_i$) :
 
-$$ \int_{g(K_c)} f(X)\, dX \approx \sum_{i=1}^{n_{\text{quad}}} \bar{w_i}\, f(\Phi(\hat{\xi}_i)) $$
+$$ \int_{g(K_c)} f(X)\, dX \approx \sum_{i=1}^{n_{\text{quad}}} \bar{w_i}\, f(\Phi_{K_c}(\hat{\xi}_i)) $$
 
 où $\bar{w_i} = \frac{1}{n_\text{cells}}\, w_i\, |\det J_g(T_{K_c}(\hat{\xi}_i))|$ sont les poids corrigés pour la cellule $K_c$.
 
-### Intégrations surfaciques ($(d-1)$-dimensions)
+#### Intégrations surfacique ($(d-1)$-dimensions)
 
-Le changement de variable sur la face physique $g(F_k)$, avec $F_k$ une face du groupe $\ell$, se fait en deux étapes. Contrairement au cas volumique, l'élément de surface physique fait intervenir le facteur de Nanson $\|J_g^{-T} e_\ell\|$ en plus du jacobien :
+On note $\Phi_{F_k} = g \circ T_{F_k} : F_{\text{ref},\ell} \to \Omega$ la composition du mapping avec la transformation "surfacique", soit le passage de la face de référence (associée au groupe $\ell$) au domaine physique. 
 
-$$\int_{g(F_k)} f\, dS \underbrace{=}_{X = g(\xi^s)} \int_{F_k} f(g(\xi^s))\, |\det J_g(\xi^s)|\,\|J_g(\xi^s)^{-T} e_\ell\|\, d\xi^s \underbrace{=}_{\xi = T_{K_c}(\hat{\xi}^s)} \frac{N_\ell}{n_\text{cells}} \int_{F_\text{ref}} f(\Phi(\hat{\xi}^s))\, |\det J_g(T_{K_c}(\hat{\xi}^s))|\, \|J_g(T_{K_c}(\hat{\xi}^s))^{-T} e_\ell\|\, d\hat{\xi}^s$$
 
-avec $\|\cdot\|$ la norme euclidienne et $F_\text{ref} = [0,1]^{d-1}$ la face de référence (hyperplan dans $[0,1]^d$).
+Le changement de variable sur la face physique $g(F_k)$, avec $F_k$ une face du groupe $\ell$, se fait également en deux étapes. Contrairement au cas volumique, l'élément de surface physique fait intervenir le facteur de Nanson $\|J_g^{-T} e_\ell\|$ en plus du jacobien :
 
-Discrétisé par quadrature sur $F_\text{ref}$ (points $\hat{\xi}_i^s$, poids $w_i^s$) :
+$$\int_{g(F_k)} f\, dS \underbrace{=}_{X = g(\xi)} \int_{F_k} f(g(\xi))\, |\det J_g(\xi)|\,\|J_g(\xi)^{-T} e_\ell\|\, d\xi \underbrace{=}_{\xi = T_{F_k}(\hat{\xi})} \frac{N_\ell}{n_\text{cells}} \int_{F_{\text{ref},\ell}} f(\Phi_{F_k}(\hat{\xi}))\, |\det J_g(T_{F_k}(\hat{\xi}))|\, \|J_g(T_{F_k}(\hat{\xi}))^{-T} e_\ell\|\, d\hat{\xi}$$
 
-$$\int_{g(F_k)} f\, dS \approx \sum_i \bar{w}_i^s\, f(\Phi(\hat{\xi}_i^s))$$
+avec $\|\cdot\|$ la norme euclidienne, $F_{\text{ref},\ell}$ la face de référence (associée au groupe $\ell$).
 
-où $\bar{w}_i^s = \dfrac{N_\ell}{n_\text{cells}}\, w_i^s\, |\det J_g(T_{K_c}(\hat{\xi}_i^s))|\, \|J_g(T_{K_c}(\hat{\xi}_i^s))^{-T} e_\ell\|$ sont les poids corrigés pour la face $F_k$.
+Discrétisé par quadrature sur $F_{\text{ref},\ell}$ (points $\hat{\xi}_{\ell,i}^s$, poids $w_i^s$) :
 
-> **Exemple :** Prenons $g(\xi) = (a\xi_0, b\xi_1)$ avec $a \neq b$, $J_g = \text{diag}(a, b)$, $|\det J_g| = ab$.
+$$\int_{g(F_k)} f\, dS \approx \sum_i \bar{w}_i^s\, f(\Phi_{F_k}(\hat{\xi}_{\ell,i}^s))$$
+
+où $\bar{w}_i^s = \dfrac{N_\ell}{n_\text{cells}}\, w_i^s\, |\det J_g(T_{F_k}(\hat{\xi}_i^s))|\, \|J_g(T_{F_k}(\hat{\xi}_i^s))^{-T} e_\ell\|$ sont les poids corrigés pour la face $F_k$ (associée au groupe $\ell$).
+
+> **Exemple (facteur de Nanson) :** Prenons  $d=2$ et $g(\xi) = (a\xi_0, b\xi_1)$ avec $a \neq b$, $J_g = \text{diag}(a, b)$, $|\det J_g| = ab$.
 >
 > Considérons une face verticale (appartenant au groupe $\ell=0$) du domaine logique (de longueur $1$), par exemple la face $\xi_0 = 1$. Après mapping, ce segment a comme longueur $b$ (ce qui signifie que seul $\xi_1$ s'étire).
 >
