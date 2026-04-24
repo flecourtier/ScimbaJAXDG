@@ -42,14 +42,13 @@
 	Tester le non-linéaire avec $-\nabla\cdot(A(u,x)\nabla u) + b(u,x)\cdot\nabla u + c(u,x) = f(x)$ où $u=u_\theta(x)$. 
 	Attention : la composition ne peut pas prendre $u$ directement (écrire la lambda fonction comme lambda x: x^2 où x est u). 
 - [ ] Plus tard : tester si on apprend un flux, qu'est-ce qui se passe...
+
 **Performances:**
 
 - [ ] Regarder les modifs d'Emmanuel et de Victor.
 - [ ] Tester temps exécution entre newton normal et mat free pour la convergence du laplacien
 - [ ] Tester de demander à Claude de faire un code dg tout simple pour résoudre laplacien P1 sur un carré et comparer temps d'execution avec version scimba_jax_dg
 - [ ] (**Michel**) Est-ce qu'avec une base enrichie on gagne en ordre ? ou en constante de convergence ?  
-
-
 ## Solve DG - Multidimensionnel
 
 - [x] Adapter `Mesh` et `EllipticDGscheme` pour le cas multidimensionnel.
