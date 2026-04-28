@@ -36,7 +36,7 @@ On se place dans le contexte où on travaille **sur un seul "patch"** divisé en
 - $N_\ell$ : nombre de cellules dans la direction $\ell$
 - $N_\text{cells} = (N_0, \ldots, N_{d-1})$ : tuple du nombre de cellules par direction (`n_cells`)
 - $n_\text{cells} = \prod_{\ell=0}^{d-1} N_\ell$ : nombre total de cellules (`n_cells_total`)
-- $K_\text{ref} = [0,1]^d$ : élément de référence (cellule)
+- $K_\text{ref} = [0,1]^d$ : élément (cellule) de référence
 - $K_c$ : la $c$-ème cellule du maillage,
     - $c \in [0, n_\text{cells} - 1]$ : indexation plate
     - $\bar{c}(c) = (\bar{c}_0, \ldots, \bar{c}_{d-1})$ : indexation multi-dimensionnelle de la cellule $K_c$ avec $\bar{c}_\ell \in \{0, \ldots, N_\ell - 1\}$
@@ -63,8 +63,8 @@ Tous les points de quadrature (volumique ou surfacique) sont définis dans un es
 - $\hat{\xi}_i$ : $i$-ème point de quadrature sur l'élément de référence $K_\text{ref}$
 - $w_i$ : $i$-ème poids de quadrature sur l'élément de référence $K_\text{ref}$
 - $\hat{\xi}_{\ell,i}^s$ : $i$-ème point de quadrature surfacique sur la face de référence $F_{\text{ref},\ell}$ (l-ème coordonnée fixée à $0$)
-- $w_i^s$ : $i$-ème poids de quadrature surfacique sur la face de référence $F_{\text{ref},\ell}$ (indépendant de $\ell$)
-- $\bar{w}_i$, $\bar{w}_i^s$ : poids corrigés pour une cellule $K_c$ et une face $F_k$ (respectivement) 
+- $w_i^s$ : $i$-ème poids de quadrature surfacique sur la face de référence $F_{\text{ref},\ell}$ (indépendant de $\ell$, car identique pour toutes les faces de référence) <span style="color: red;">-> à vérifier</span>
+- $w_{c,i}$, $w_{k,i}^s$ : poids corrigés pour une cellule $K_c$ et une face $F_k$ (respectivement) 
 
 ### Bases
 
@@ -102,7 +102,7 @@ avec $m$ le nombre de fonctions composées où chaque $g_j$, $j \in \{1, \ldots,
 | `InvertibleFunction` | Mapping inversible analytique |
 | `InvertibleNet` | Réseau inversible du module Equinox (`eqx.Module`) |
 
-On suppose donc que chaque mapping $g_j$ est inversible. On considère également que le mapping est bien orienté, c'est-à-dire que le déterminant de son jacobien est strictement positif partout dans le domaine logique.
+On suppose donc que chaque mapping $g_j$ est inversible.
 
 L'application inverse de $g$ est donc donnée par :
 
@@ -144,27 +144,29 @@ La classe `UnitSquareTensorized` construit une quadrature par produit tensoriel 
 
 $$ \int_{K_\text{ref}} f(\hat{\xi})\, d\hat{\xi} \approx \sum_{i=1}^{n_{\text{quad}}} w_i\, f(\hat{\xi}_i) $$
 
-où $n_{\text{quad}} = q^d$ est le nombre total de points volumiques avec $q$ l'ordre de quadrature, $w_i$ et $\hat{\xi}_i$ sont les poids et les points de quadrature.
+où $n_{\text{quad}} = q^d$ est le nombre total de points de quadrature volumiques avec $q$ l'ordre de quadrature, $w_i$ et $\hat{\xi}_i$ sont les poids et les points de quadrature.
 
-De la même manière, elle construit une quadrature par produit tensoriel sur toutes les faces de l'élément de référence. Pour la suite, on s'intéressera uniquement aux faces "gauche/basse" de chaque direction. Pour celà, on va définir une face de référence $F_{\text{ref},\ell}$ pour chaque direction $\ell\in\{0, \ldots, d-1\}$, correspondant à l'hyperplan de $K_\text{ref}$ où la $\ell$-ème coordonnée est fixée à $0$, autrement dit :
+De la même manière, elle construit une quadrature par produit tensoriel sur toutes les faces de l'élément de référence. Pour la suite, on s'intéressera uniquement aux faces "gauche/basse" de chaque direction. Pour cela, on va définir une face de référence $F_{\text{ref},\ell}$ pour chaque direction $\ell\in\{0, \ldots, d-1\}$, correspondant à l'hyperplan de $K_\text{ref}$ où la $\ell$-ème coordonnée est fixée à $0$, autrement dit :
 $$F_{\text{ref},\ell} = \{\hat{\xi} = (\hat{\xi}_0, \hat{\xi}_1, \ldots, \hat{\xi}_{d-1}) \in [0,1]^d : \hat{\xi}_\ell = 0\}$$
 Ainsi, pour une face $F_{\text{ref},\ell}$ de référence associée à la direction $\ell$, la quadrature par produit tensoriel est donnée par :
 
 $$ \int_{F_{\text{ref},\ell}} f(\hat{\xi})\, d\hat{\xi} \approx \sum_{i=1}^{n_{\text{quad}}^s} w_i^s\, f(\hat{\xi}_{\ell,i}^s) $$
 
-où $n_{\text{quad}}^s = q^{d-1}$ est le nombre total de points surfaciques pour une face de référence (indépendant de $\ell$), $\hat{\xi}_{\ell,i}^s$ sont les points de quadrature surfacique et $w_i^s$ les poids de quadrature surfacique (également indépendants de $\ell$).
+où $n_{\text{quad}}^s = q^{d-1}$ est le nombre total de points de quadrature surfaciques pour une face de référence (nombre indépendant de $\ell$), $\hat{\xi}_{\ell,i}^s$ sont les points de quadrature surfacique et $w_i^s$ les poids de quadrature surfacique (également indépendants de $\ell$).
 
 ### Construction des points et poids
 
-Actuellement, deux variantes de règles de quadrature 1D (remappés de l'intervalle $[-1,1]$ à $[0,1]$) sont disponibles : Gauss-Legendre et Chebyshev. Pour un ordre de quadrature $q$, les polynômes de Gauss-Legendre permettent d'intégrer exactement les polynômes de degré jusqu'à $2q-1$.
+Actuellement, deux variantes de règles de quadrature 1D (remappés de l'intervalle $[-1,1]$ à $[0,1]$) sont disponibles : Gauss-Legendre et Chebyshev. 
 
-Ces points et poids 1D sont ensuite tensorisés pour construire les points et poids volumiques et surfaciques sur l'hypercube de référence. Plus précisément, les points volumiques sont construits par le produit tensoriel des points 1D dans chaque direction, et les poids volumiques sont le produit des poids 1D correspondants. Pour les points surfaciques, on fixe une coordonnée normale à $0$ ou $1$ et on construit un produit tensoriel $(d-1)$-dimensionnel dans les directions tangentes.
+Ces points et poids 1D sont ensuite tensorisés pour construire les points et poids volumiques et surfaciques sur l'hypercube de référence. Plus précisément, les points volumiques sont construits par le produit tensoriel des points 1D dans chaque direction, et les poids volumiques sont le produit des poids 1D correspondants. Pour les points surfaciques, on fixe une coordonnée normale à $0$ ou $1$ (dans la suite, on utilise $0$) et on construit un produit tensoriel $(d-1)$-dimensionnel dans les directions tangentes.
+
+> **Note :** Pour un ordre de quadrature $q$, les polynômes de Gauss-Legendre permettent d'intégrer exactement les polynômes de degré jusqu'à $2q-1$.
 
 ### Dimensions des tenseurs
 
 * `points_1d`, `weights_1d` : $(q,)$, $(q,)$
-* `volumic_points`, `volumic_weights` : $(q^d,\, d)$, $(q^d,)$
-* `surfacic_points`, `surfacic_weights` : $(2d,\, q^{d-1},\, d)$, $(2d,\, q^{d-1})$
+* `volumic_points`, `volumic_weights` : $(n_\text{quad},\, d)$, $(n_\text{quad},)$
+* `surfacic_points`, `surfacic_weights` : $(2d,\, n_\text{quad}^s,\, d)$, $(2d,\, n_\text{quad}^s)$
 
 ## 3. Maillage
 
@@ -172,7 +174,7 @@ Ces points et poids 1D sont ensuite tensorisés pour construire les points et po
 
 ### Description
 
-On définit un maillage uniforme $\mathcal{T}_h$ sur $[0,1]^d$, découpé en $N_\ell$ cellules dans la direction $\ell \in \{0, \ldots, d-1\}$ où $h$ représente la taille caractéristique du maillage.
+On définit un maillage uniforme $\mathcal{T}_h$ sur l'espace logique $[0,1]^d$, découpé en $N_\ell$ cellules dans la direction $\ell \in \{0, \ldots, d-1\}$ où $h$ représente la taille caractéristique du maillage.
 
 On définit $N_\text{cells} = (N_0, \ldots, N_{d-1})$ comme le tuple du nombre de cellules par direction et $n_\text{cells} = \prod_{\ell=0}^{d-1} N_\ell$ comme le nombre total de cellules. 
 
@@ -190,7 +192,7 @@ Chaque cellule $K_c$ (où $c$ est l'indice de la cellule), définie comme un hyp
 > - $c=0$ (première cellule) $\rightarrow \bar{c}(0) = (0, 0, 0)$
 > - $c=11$ (dernière cellule) $\rightarrow \bar{c}(11) = (1, 1, 2)$
 
-**Faces :** Les faces sont des hypersurfaces $(d-1)$-dimensionnelles, organisées en $d$ groupes selon leur axe normal. Les faces du groupe $\ell$ sont perpendiculaires à cette même direction ce qui signifie que chaque couche (correspondant à une position fixée sur l'axe $\ell$) contient $\prod_{j \neq \ell} N_j$ faces, et il y a $N_\ell + 1$ couches, soit au total $n_{f,\ell}$ faces dans le groupe $\ell$ :
+**Faces :** Les faces sont des hypersurfaces $(d-1)$-dimensionnelles, organisées en $d$ groupes selon leur axe normal. Les faces du groupe $\ell$ sont perpendiculaires à cette même direction ce qui signifie que chaque couche (correspondant à une position fixée sur l'axe $\ell$) contient $\prod_{j \neq \ell} N_j$ faces. Comme il y a $N_\ell + 1$ couches dans chaque groupe $\ell$, on a au total $n_{f,\ell}$ faces dans le groupe $\ell$, défini par :
 
 $$n_{f,\ell} = (N_\ell + 1) \cdot \prod_{j \neq \ell} N_j$$
 
@@ -221,9 +223,9 @@ De manière équivalente aux cellules, chaque face $F_k$ (où $k$ est l'indice d
 
 Les faces sont ensuite classées en deux catégories :
 - **Internes** (`internal_faces_idx`) : couches intermédiaires ($1 \leq$ position $\leq N_\ell - 1$), partagées par deux cellules. 
-    
-    Si $N_\ell = 1$ dans une direction, il n'y a aucune face interne dans le groupe $\ell$.
 - **Externes** (`external_faces_idx`) : première et dernière couche (position $0$ et $N_\ell$), faces de bord.
+
+> **Note :** Si $N_\ell = 1$ dans une direction, il n'y a aucune face interne dans le groupe $\ell$.
 
 La fonction `_face_fidx_to_neighbors_fidx` retourne les indices plats des deux cellules voisines d'une face. Pour les faces de bord, le voisin extérieur est encodé par une valeur négative.
 
@@ -258,9 +260,9 @@ La première flèche est réalisée par `_unit_hypercube_to_cell`, la seconde pa
 
 Pour les faces, on procède de manière analogue. On note $T_{F_k} : F_{\text{ref},\ell} \to F_k$ la transformation qui envoie la face de référence sur la face $F_k$ (associée au groupe $\ell$) :
 
-$$\xi = T_{F_k}(\hat{\xi}) = \frac{\hat{\xi} + \bar{k}}{N_\text{cells}}$$
+$$\xi = T_{F_k}(\hat{\xi}) = \frac{\hat{\xi} + \bar{k}(k)_{1:}}{N_\text{cells}}$$
 
-où la division et la multiplication se font également composante par composante.
+avec $\bar{k}(k)_{1:} = (\bar{k}_0, \ldots, \bar{k}_{d-1})$ obtenu en omettant la composante $\ell$ et où la division et la multiplication se font également composante par composante.
 
 Les points de quadrature surfaciques (vivant dans un hyperplan de l'espace volumique) traversent alors trois espaces successifs :
 
@@ -283,7 +285,7 @@ La première flèche est réalisée par `_unit_hyperplane_to_face`, la seconde p
 
 #### Normales physiques (formule de Nanson)
 
-Les méthodes numériques requiert les normales sortantes unitaires sur chaque face (internes et externes pour DG, uniquement externes pour EF) dans le domaine physique $\Omega$. Dans le domaine logique, la normale (positive) d'une face du groupe $\ell$ est simplement le vecteur canonique $e_\ell = (0, \ldots, 0, 1, 0, \ldots, 0)$ avec un $1$ à la position $\ell$. On obtient la normale physique (positive) via la formule de Nanson :
+Les méthodes numériques requièrent les normales sortantes unitaires sur chaque face (internes et externes pour DG, uniquement externes pour EF) dans le domaine physique $\Omega$. Dans le domaine logique, la normale (positive) d'une face du groupe $\ell$ est simplement le vecteur canonique $e_\ell = (0, \ldots, 0, 1, 0, \ldots, 0)$ avec un $1$ à la position $\ell$. On obtient la normale physique (positive) via la formule de Nanson :
 
 $$n_{\text{phys}} = \text{sign}(\det J_g) \frac{J_g(\xi)^{-T}\, e_\ell}{\|J_g(\xi)^{-T}\, e_\ell\|}$$
 
@@ -303,9 +305,9 @@ $$\int_{g(K_c)} f(X)\, dX \underbrace{=}_{X = g(\xi)} \int_{K_c} f(g(\xi))\, |\d
 
 Discrétisé par quadrature sur $K_\text{ref}$ (points $\hat{\xi}_i$, poids $w_i$) :
 
-$$ \int_{g(K_c)} f(X)\, dX \approx \sum_{i=1}^{n_{\text{quad}}} \bar{w_i}\, f(\Phi_{K_c}(\hat{\xi}_i)) $$
+$$ \int_{g(K_c)} f(X)\, dX \approx \sum_{i=1}^{n_{\text{quad}}} w_{c,i}\, f(\Phi_{K_c}(\hat{\xi}_i)) $$
 
-où $\bar{w_i} = \frac{1}{n_\text{cells}}\, w_i\, |\det J_g(T_{K_c}(\hat{\xi}_i))|$ sont les poids corrigés pour la cellule $K_c$.
+où $w_{c,i} = \frac{1}{n_\text{cells}}\, w_i\, |\det J_g(T_{K_c}(\hat{\xi}_i))|$ sont les poids corrigés pour la cellule $K_c$.
 
 #### Intégrations surfacique ($(d-1)$-dimensions)
 
@@ -320,9 +322,9 @@ avec $\|\cdot\|$ la norme euclidienne, $F_{\text{ref},\ell}$ la face de référe
 
 Discrétisé par quadrature sur $F_{\text{ref},\ell}$ (points $\hat{\xi}_{\ell,i}^s$, poids $w_i^s$) :
 
-$$\int_{g(F_k)} f\, dS \approx \sum_i \bar{w}_i^s\, f(\Phi_{F_k}(\hat{\xi}_{\ell,i}^s))$$
+$$\int_{g(F_k)} f\, dS \approx \sum_i w_{k,i}^s\, f(\Phi_{F_k}(\hat{\xi}_{\ell,i}^s))$$
 
-où $\bar{w}_i^s = \dfrac{N_\ell}{n_\text{cells}}\, w_i^s\, |\det J_g(T_{F_k}(\hat{\xi}_i^s))|\, \|J_g(T_{F_k}(\hat{\xi}_i^s))^{-T} e_\ell\|$ sont les poids corrigés pour la face $F_k$ (associée au groupe $\ell$).
+où $w_{k,i}^s = \dfrac{N_\ell}{n_\text{cells}}\, w_i^s\, |\det J_g(T_{F_k}(\hat{\xi}_i^s))|\, \|J_g(T_{F_k}(\hat{\xi}_i^s))^{-T} e_\ell\|$ sont les poids corrigés pour la face $F_k$ (associée au groupe $\ell$).
 
 > **Exemple (facteur de Nanson) :** Prenons  $d=2$ et $g(\xi) = (a\xi_0, b\xi_1)$ avec $a \neq b$, $J_g = \text{diag}(a, b)$, $|\det J_g| = ab$.
 >
@@ -333,19 +335,19 @@ où $\bar{w}_i^s = \dfrac{N_\ell}{n_\text{cells}}\, w_i^s\, |\det J_g(T_{F_k}(\h
 > Le facteur de Nanson corrige exactement cela : $J_g^{-T} e_0 = e_0/a$, donc $\|J_g^{-T} e_0\| = 1/a$, et :
 > $$|\det J_g| \cdot \|J_g^{-T} e_0\| = ab \cdot \frac{1}{a} = b \checkmark$$
 
-### Méthodes publiques
+<!-- ### Méthodes publiques
 
 | Méthode | Retourne | Shape |
 |---|---|---|
 | `evaluate_mesh_points()` | points physiques sur toutes les cellules | $(n_\text{cells}, n_{\text{quad}}, d)$ |
 | `evaluate_mesh_weights_points()` | poids corrigés + points physiques | $(n_\text{cells}, n_{\text{quad}})$, $(n_\text{cells}, n_{\text{quad}}, d)$ |
-| `find_cell_index(x)` | indice `midx` et `fidx` de la cellule contenant $x$ | |
 | `cell_centroid(c)` | centroïde physique de la cellule $c$ | $(d,)$ |
+| `find_cell_index(x)` | indice `midx` et `fidx` de la cellule contenant $x$ | | -->
 
 ### Enregistrement comme pytree JAX
 
 `Mesh` est enregistré comme pytree JAX avec :
-- `children` : le `Mapping` (apprenable, mis à jour par l'optimiseur)
+- `children` : le `Mapping` (possiblement apprenable et mis à jour par l'optimiseur)
 - `aux_data` : tous les autres attributs statiques (`dim`, `n_cells`, `ref_quad`, indices de faces, etc.)
 
 ## 4. Bases
@@ -392,7 +394,7 @@ Ces trois bases sont implémentées dans des classes distinctes (`AnalyticBasis`
 
 ### Fonctions tests
 
-De manière équivalente, on peut introduire les fonctions tests $\bar{\psi}_{c,i} : K_c \to \mathbb{R}^{n_{\text{out}}}$, qui peuvent être différentes des fonctions de base (Petrov-Galerkin) mais doivent avoir le même `out_dim` et `nb_basis`. 
+De manière équivalente, on peut introduire les fonctions tests $\bar{\psi}_{c,i} : K_c \to \mathbb{R}^{n_{\text{out}}}$, qui peuvent être différentes des fonctions trial (Petrov-Galerkin) mais doivent avoir le même `out_dim` et `nb_basis`. 
 
 On considère que les fonctions tests sont construites de la même manière que les fonctions de base, c'est à dire qu'elles peuvent être analytiques, patchwise ou cellwise. Voir la table ci-dessous pour les différentes combinaisons possibles de bases trial et test :
 
@@ -418,19 +420,19 @@ Pour `PatchwiseParametricBasis` et `CellwiseParametricBasis`, le module paramét
 Pour les deux méthodes DG et EF, la variable discrète est définie de manière similaire à partir des fonctions de base et des DOFs linéaires. La différence entre les deux méthodes réside dans la structure globale de l'espace discret et les contraintes de continuité. Ces points seront détaillés dans les fichiers dédiés à chacune des méthodes.
 </span>
 
-Dans la suite du document, on notera $u_h$ la variable discrète définie de manière globale sur $\Omega$ (avec indicatrices).
+Dans la suite du document, on notera $u_h$ la variable discrète définie de manière globale sur $\Omega$.
 
 ## 6. Post-processing
 
 > src/scimba_jax/linear_approximation/variables/postprocessing.py
 
-Le post-processing, notéée $\mathcal{P}$, est un opérateur qui agit sur la variable discrète reconstruite à partir des DOFs. Cet opérateur peut-être une fonction analytique (linéaire ou non-linéaire) ou un réseau de neurones, un `eqx.Module` (non-linéaire).
+Le post-processing, noté $\mathcal{P}$, est un opérateur qui agit sur la variable discrète reconstruite à partir des DOFs. Cet opérateur peut-être une fonction analytique (linéaire ou non-linéaire) ou un réseau de neurones `eqx.Module` (non-linéaire).
 
 On peut considérer deux types de processings :
 - **Local** : la valeur post-processée en un point $x$ dépend uniquement de la valeur reconstruite $u_h|_{K_c}(x)$ (dans la cellule $K_c$ contenant $x$), c'est-à-dire que la solution post-processée s'écrit :
-$$\bar{u_h}(x) = \mathcal{P}(u_h|_{K_c}(x), x), \qquad x \in K_c.$$
+$$\bar{u_h}(x) = \mathcal{P}(u_h|_{K_c}, x), \qquad x \in K_c.$$
 - **Global** <span style="color: red;">(Non implémenté)</span> : la valeur post-processée en un point $x$ dépend de la valeur reconstruite $u_h$ sur l'ensemble du domaine $\Omega$, c'est-à-dire que la solution post-processée s'écrit :
-$$\bar{u_h}(x) = \mathcal{P}(u_h(x), x), \qquad x \in \Omega.$$
+$$\bar{u_h}(x) = \mathcal{P}(u_h, x), \qquad x \in \Omega.$$
 
 ### Enregistrement comme pytree JAX
 
