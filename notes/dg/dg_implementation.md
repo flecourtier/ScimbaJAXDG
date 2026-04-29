@@ -2,13 +2,16 @@
 
 <span style="color: blue;">Le fichier "implementation.md" contient toutes les informations communes à l'implémentation du schéma DG et du schéma FE.</span>
 
-<span style="color: red;">Définir les espaces d'approximation.</span>
+<span style="color: red;">TODO : Définir les espaces d'approximation.</span>
 
 ## Notations
 
 <span style="color: blue;">On reprend toutes les notations utilisées dans le document principal.</span>
 
-<!-- On définit également les notations suivantes pour l'implémentation spécifique à la méthode DG : -->
+On définit également les notations suivantes pour l'implémentation spécifique à la méthode DG :
+
+- $u_{c,i,\alpha}$ : DOF linéaire associé à la $i$-ème fonction de base de la $c$-ème cellule et à la composante $\alpha$-ème de la solution
+- $\mathbf{u}_{c,\alpha} = (u_{c,i,\alpha})_{i=0}^{n_b-1}$ : vecteur des DOFs linéaires associés à la composante $\alpha$-ème de la solution dans la cellule $c$
 
 ## Variables
 
@@ -21,11 +24,11 @@ En DG, on utilise deux écritures équivalentes de cette variable discrète :
 
 - **Écriture locale (cellule par cellule) :**
 
-    $$U_{h,\alpha}|_{g(K_c)}(x) = \sum_{i=0}^{n_b-1} u_{c,i,\alpha}\, \bar{\varphi}_{c,i,\alpha}(x), \qquad x \in g(K_c).$$
+    $$U_{h,\alpha}|_{g(K_c)}(X) = \sum_{i=0}^{n_b-1} u_{c,i,\alpha}\, \bar{\varphi}_{c,i,\alpha}(X), \qquad X \in g(K_c).$$
 
 - **Écriture globale (avec indicatrices) :**
 
-    $$U_{h,\alpha}(x) = \sum_{c=0}^{n_\text{cells}-1} \sum_{i=0}^{n_b-1} u_{c,i,\alpha} \, \bar{\varphi}_{c,i,\alpha}(x) \, \mathbb{1}_{\{x \in g(K_c)\}}, \qquad x \in \Omega.$$
+    $$U_{h,\alpha}(X) = \sum_{c=0}^{n_\text{cells}-1} \sum_{i=0}^{n_b-1} u_{c,i,\alpha} \, \bar{\varphi}_{c,i,\alpha}(X) \, \mathbb{1}_{\{X \in g(K_c)\}}, \qquad X \in \Omega.$$
 
 avec $u_{c,i,\alpha}$ les DOFs linéaires associés à la $i$-ème fonction de base de la $c$-ème cellule et à la composante $\alpha$-ème de la solution, et $\bar{\varphi}_{c,i,\alpha}$ la $i$-ème fonction de base (trial) associée à la composante $\alpha$-ème de la solution dans la cellule $c$.
 
@@ -52,27 +55,45 @@ Chaque méthode a une variante `_pure` (méthode statique) qui prend `variables_
 
 On suppose ici qu'on veut projeter une fonction $f : \Omega \to \mathbb{R}^{n_\text{out}}$ sur l'espace DG.
 
-Pour simplifier, on fixe $n_\text{out} = 1$ (une seule composante) dans les formules suivantes.
+<!-- Pour simplifier, on fixe $n_\text{out} = 1$ (une seule composante) dans les formules suivantes. -->
 
 #### Sans post-processing (classique)
 
-Pour une cellule physique $g(K_c)$, on cherche $U_c = (u_{c,i})_{i=0}^{n_b-1}$ tel que :
+Pour une cellule physique $g(K_c)$ et une composante $\alpha$-ème de la solution, on cherche $\mathbf{u}_{c,\alpha} = (u_{c,i,\alpha})_{i=0}^{n_b-1}$ tel que :
 
-$$\underbrace{\int_{g(K_c)} f \cdot \bar{\psi}_{c,j}}_{b_{c,v,j}} = \sum_{i=0}^{n_b-1} u_{c,i} \underbrace{\int_{g(K_c)} \bar{\varphi}_{c,i} \cdot \bar{\psi}_{c,j}}_{M_{c,v,ij}}, \quad \forall j,$$
+$$\underbrace{\int_{g(K_c)} f(X) \cdot \bar{\psi}_{c,j,\alpha}(X)dX}_{(b_{c,\alpha})_j} = \sum_{i=0}^{n_b-1} u_{c,i,\alpha} \underbrace{\int_{g(K_c)} \bar{\varphi}_{c,i,\alpha}(X) \cdot \bar{\psi}_{c,j,\alpha}(X)dX}_{(M_{c,\alpha})_{i,j}}, \quad \forall j,$$
 
-La matrice de masse est calculée par variable $v$ :
-$$M_{c,v,ij} = \sum_q w_q\, \psi_{c,q,i,v}\, \varphi_{c,q,j,v}$$
+La matrice de masse $M_{c,\alpha}$ ainsi que le vecteur de projection $b_{c,\alpha}$ sont calculés via des intégrations numériques (quadrature) sur la cellule physique $g(K_c)$, comme décrit dans le document principal.
+Le système $M_{c,\alpha}\, \mathbf{u}_{c,\alpha} = \mathbf{b}_{c,\alpha}$ est alors résolu cellule par cellule via `jnp.linalg.solve` (un système $(n_b \times n_b)$ par composante $\alpha$), vmap sur les cellules.
 
-Résolue cellule par cellule via `jnp.linalg.solve` (un système $(n_b \times n_b)$ par composante $v$), vmap sur les cellules.
+#### Avec post-processing local (possiblement non-linéaire)
 
-#### Avec post-processing local (non-linéaire)
+> **Remarques :**
+> - Le post-processing local est appliqué à la variable discrète reconstruite $U_h$ (et non pas directement aux DOFs linéaires) : $\bar{U_h}(X) = \mathcal{P}(U_h(X), X)$.
+> - Le post-processing peut coupler les différentes composantes de la solution, ce qui implique qu'il est nécessaire de résoudre un système global sur toutes les composantes $\alpha$-ème à la fois (pas de découplage composante par composante possible comme dans le cas classique sans post-processing).
+> - Comme le post-processing peut être non-linéaire, on doit faire un Newton. Si le post-processing est linéaire, on peut faire une seule itération du Newton.
 
-Si `post_processing.linear = True` : 1 itération Newton (résolution directe). Sinon : `n_iter = 20` itérations.
+Pour une cellule physique $g(K_c)$ fixée, on cherche $\mathbf{u}_c = (u_{c,i,\alpha})_{i,\alpha}$ tel que :
 
-Le résidu local à minimiser pour la cellule $c$ :
-$$R_{c,v,j}(\theta_c) = \int_{K_c} \left[\mathcal{P}(u_h|_{K_c}) - f\right] \bar{\varphi}_{c,j}^{\text{test}} \approx \sum_q w_q \left[\mathcal{P}(u_h(x_q)) - f(x_q)\right] \varphi^{\text{test}}_{c,q,j,v}$$
+$$R_{j,\alpha}(\mathbf{u}_c) := \int_{g(K_c)} \left[\mathcal{P}(U_h(X), X) - f(X)\right]_\alpha \cdot \bar{\psi}_{c,j,\alpha}(X)\, dX = 0, \quad \forall j \in \{0,\ldots,n_b-1\},\, \alpha \in \{0,\ldots,n_\text{out}-1\}$$
 
-Newton : $\theta_c^{(s+1)} = \theta_c^{(s)} + \Delta\theta_c$ avec $\Delta\theta_c = -J_R^{-1} R_c(\theta_c^{(s)})$ via `jnp.linalg.lstsq`. Le VJP est défini via `jax.custom_vjp` (différentiation implicite).
+avec $U_h(X)$ la solution discrète reconstruite à partir des DOFs linéaires $\mathbf{u}_c$.
+
+En notant $\mathbf{r}(\mathbf{u}_c) = (R_{j,\alpha}(\mathbf{u}_c))_{j,\alpha} \in \mathbb{R}^{n_b \times n_\text{out}}$, ce système non-linéaire est résolu par Newton :
+
+$$\mathbf{u}_c^{(s+1)} = \mathbf{u}_c^{(s)} - J_\mathbf{r}^{-1}\, \mathbf{r}(\mathbf{u}_c^{(s)})$$
+
+via `jnp.linalg.lstsq`. Le VJP est défini via `jax.custom_vjp` (différentiation implicite).
+
+> **Exemple (couplage des composantes) :** Prenons $n_\text{out} = 2$ et un post-processing simple (linéaire) :
+> 
+> $$\bar{U}_h(X) = \mathcal{P}(U_h(X),X) = (U_{h,0}(X) + U_{h,1}(X) , U_{h,1}(X))$$
+> Le résidu sur la composante $\alpha=0$ est :
+> $$R_{j,0}(\mathbf{u}_c) = \int_{g(K_c)} \left[U_{h,0}(X) + U_{h,1}(X) - f_0(X)\right] \cdot \bar{\psi}_{c,j,0}(X)\, dX$$
+> $$= \int_{g(K_c)} \left[\sum_i u_{c,i,0}\, \bar{\varphi}_{c,i,0}(X) + \sum_i u_{c,i,1}\, \bar{\varphi}_{c,i,1}(X) - f_0(X)\right] \cdot \bar{\psi}_{c,j,0}(X)\, dX$$
+> Et ainsi $\frac{\partial R_{j,0}}{\partial u_{c,i,1}} \neq 0$, ce qui signifie que le résidu sur la composante $0$ dépend des DOFs de la composante $1$ via le post-processing $\mathcal{P}$. C'est pourquoi, il est nécessaire de résoudre un système global sur toutes les composantes à la fois.
+>
+> En pratique, si on est dans le cas $\mathcal{P}_\theta$ (un réseau de neurones), toutes les composantes sont mélangées dans les couches cachées, donc tous les blocs hors-diagonale du Jacobien sont non nuls a priori. 
 
 ### API publique
 

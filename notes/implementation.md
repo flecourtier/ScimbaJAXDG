@@ -434,10 +434,14 @@ De manière équivalente, on peut introduire les fonctions de base et de test as
 Le post-processing, noté $\mathcal{P}$, est un opérateur qui agit sur la variable discrète reconstruite à partir des DOFs. Cet opérateur peut-être une fonction analytique (linéaire ou non-linéaire) ou un réseau de neurones `eqx.Module` (non-linéaire).
 
 On peut considérer deux types de processings :
-- **Local** : la valeur post-processée en un point $x$ dépend uniquement de la valeur reconstruite $U_h|_{g(K_c)}(x)$ (dans la cellule physique $g(K_c)$ contenant $x$), c'est-à-dire que la solution post-processée s'écrit :
-$$\bar{U_h}(x) = \mathcal{P}(U_h|_{g(K_c)}, x), \qquad x \in g(K_c).$$
-- **Global** <span style="color: red;">(Non implémenté)</span> : la valeur post-processée en un point $x$ dépend de la valeur reconstruite $U_h$ sur l'ensemble du domaine $\Omega$, c'est-à-dire que la solution post-processée s'écrit :
-$$\bar{U_h}(x) = \mathcal{P}(U_h, x), \qquad x \in \Omega.$$
+- **Local** : la valeur post-processée en un point $X$ dépend uniquement de la valeur ponctuelle $U_h(X)$ (dans la cellule physique $g(K_c)$ contenant $X$), c'est-à-dire que la solution post-processée s'écrit :
+$$\bar{U_h}(X) = \mathcal{P}(U_h(X), X), \qquad X \in g(K_c).$$
+- **Global** <span style="color: red;">(Non implémenté)</span> : la valeur post-processée en un point $X$ dépend de la valeur reconstruite $U_h$ sur l'ensemble du domaine $\Omega$, c'est-à-dire que la solution post-processée s'écrit :
+$$\bar{U_h}(X) = \mathcal{P}(U_h, X), \qquad X \in \Omega.$$
+
+> **Exemple (post-processing global)** : Pour la version globale, $\mathcal{P}$ a besoin de connaître $U_h$ sur tout $\Omega$ pour appliquer le post-processing en $X$. Un exemple typique et simple : la normalisation globale.
+>
+> $$\bar{U_h}(X) = \frac{U_h(X) - \mu}{\sigma}, \qquad \text{où} \quad \mu = \frac{1}{|\Omega|}\int_\Omega U_h, \quad \sigma^2 = \frac{1}{|\Omega|}\int_\Omega (U_h - \mu)^2$$
 
 ### Enregistrement comme pytree JAX
 
