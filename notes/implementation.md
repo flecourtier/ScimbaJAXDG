@@ -1,6 +1,5 @@
 # Implémentation : Branche `scimba_jax_dg`
 
----
 Dans ce fichier, on présente l'implémentation commune aux deux méthodes : FEM et DG. Deux fichiers supplémentaires (`fem_implementation.md` et `dg_implementation.md`) détaillent les spécificités de chacune.
 
 On se place dans le contexte où on travaille **sur un seul "patch"** divisé en plusieurs cellules. L'élargissement à des domaines composés de plusieurs patchs sera abordée par la suite.
@@ -72,16 +71,19 @@ Tous les points de quadrature (volumique ou surfacique) sont définis dans un es
 - $n_{\text{out}}$ : dimension de sortie, nombre de variables dans le système (`out_dim`) 
     <span style="color: red;">-> à clarifier</span>
 - $\bar{\varphi}_{c,i}, \bar{\psi}_{c,i}$ : notations génériques pour la $i$-ème fonction de base de la $c$-ème cellule, respectivement : trial et test
+- $\bar{\varphi}_{c,i,\alpha}, \bar{\psi}_{c,i,\alpha}$ : $i$-ème fonction de base de la $c$-ème cellule associée à la composante $\alpha$-ème de la solution, respectivement : trial et test
 - $\varphi_{c,i}$, $\varphi_{c,i}^{\theta,P}$, $\varphi_{c,i}^{\theta,C}$ : la $i$-ème fonction de base (trial) dans la $c$-ème cellule, respectivement : analytique, patchwise (un réseau de neurones), cellwise ($n_\text{cells}$ réseaux de neurones)
 
 ### Variables discrètes
 
-- $u_h$ : variable discrète reconstruite à partir des DOFs linéaires et des fonctions de base
+- $U_h : \Omega \to \mathbb{R}^{n_\text{out}}$ : variable discrète reconstruite à partir des DOFs linéaires et des fonctions de base
+- $U_{h,\alpha}$ : $\alpha$-ème composante de la variable discrète $U_h$ (pour $\alpha \in \{0, \ldots, n_\text{out}-1\}$)
 
 ### Post-processing
 
 - $\mathcal{P}, \mathcal{P}_\theta$ : post-processing, respectivement : analytique, réseau de neurones
-- $\bar{u_h}$ : variable discrète post-processée
+- $\bar{U_h}$ : variable discrète post-processée
+<!-- - $\bar{U}_{h,\alpha}$ : $\alpha$-ème composante de la variable discrète post-processée $\bar{U_h}$ (pour $\alpha \in \{0, \ldots, n_\text{out}-1\}$) -->
 
 ## 1. Mapping
 
@@ -283,6 +285,8 @@ La première flèche est réalisée par `_unit_hyperplane_to_face`, la seconde p
 
 ### Intégrations volumique et surfacique
 
+On suppose ici qu'on veut intégrer une fonction $f$ (quelconque) sur une cellule physique $g(K_c)$ ou une face physique $g(F_k)$, avec $K_c$ une cellule du maillage et $F_k$ une face du maillage (associée au groupe $\ell$).
+
 #### Normales physiques (formule de Nanson)
 
 Les méthodes numériques requièrent les normales sortantes unitaires sur chaque face (internes et externes pour DG, uniquement externes pour EF) dans le domaine physique $\Omega$. Dans le domaine logique, la normale (positive) d'une face du groupe $\ell$ est simplement le vecteur canonique $e_\ell = (0, \ldots, 0, 1, 0, \ldots, 0)$ avec un $1$ à la position $\ell$. On obtient la normale physique (positive) via la formule de Nanson :
@@ -356,7 +360,7 @@ où $w_{k,i}^s = \dfrac{N_\ell}{n_\text{cells}}\, w_i^s\, |\det J_g(T_{F_k}(\hat
 
 Commençons par introduire le nombre de variables dans le système PDE, noté $n_\text{out}$ (par exemple $n_\text{out}=1$ pour une équation scalaire, $n_\text{out}=d$ pour un système de Navier-Stokes incompressible).
 
-On définit $n_b$ comme le nombre de fonctions de base par cellule (identique pour toutes les cellules). Pour un élément local $K_c$, on note la $i$-ème fonction de base (trial) de la $c$-ème cellule par $\bar{\varphi}_{c,i} : K_c \to \mathbb{R}^{n_{\text{out}}}$.
+On définit $n_b$ comme le nombre de fonctions de base par cellule (identique pour toutes les cellules). Pour un élément local $K_c$, on note la $i$-ème fonction de base (trial) de la $c$-ème cellule par $\bar{\varphi}_{c,i} : g(K_c) \to \mathbb{R}^{n_{\text{out}}}$.
 
 ### Types de bases
 
@@ -364,9 +368,9 @@ Une fonction de base $\bar{\varphi}_{c,i}$ peut-être définie de trois manière
 
 | `basis_type` | Définition mathématique | Contrainte | Description |
 |---|---|---|---|
-| `"scalar"` | $K_c \to \mathbb{R}$ | `out_dim == 1` | base scalaire |
-| `"field"` | $K_c \to \mathbb{R}^d$ | `out_dim == dim` | base de champ vectoriel |
-| `"vec"` | $K_c \to \mathbb{R}^{n_{\text{out}}}$ | `out_dim > 1` | base vectorielle quelconque |
+| `"scalar"` | $g(K_c) \to \mathbb{R}$ | `out_dim == 1` | base scalaire |
+| `"field"` | $g(K_c) \to \mathbb{R}^d$ | `out_dim == dim` | base de champ vectoriel |
+| `"vec"` | $g(K_c) \to \mathbb{R}^{n_{\text{out}}}$ | `out_dim > 1` | base vectorielle quelconque |
 
 ### Construction d'une base
 
@@ -394,7 +398,7 @@ Ces trois bases sont implémentées dans des classes distinctes (`AnalyticBasis`
 
 ### Fonctions tests
 
-De manière équivalente, on peut introduire les fonctions tests $\bar{\psi}_{c,i} : K_c \to \mathbb{R}^{n_{\text{out}}}$, qui peuvent être différentes des fonctions trial (Petrov-Galerkin) mais doivent avoir le même `out_dim` et `nb_basis`. 
+De manière équivalente, on peut introduire les fonctions tests $\bar{\psi}_{c,i} : g(K_c) \to \mathbb{R}^{n_{\text{out}}}$, qui peuvent être différentes des fonctions trial (Petrov-Galerkin) mais doivent avoir le même `out_dim` et `nb_basis`. 
 
 On considère que les fonctions tests sont construites de la même manière que les fonctions de base, c'est à dire qu'elles peuvent être analytiques, patchwise ou cellwise. Voir la table ci-dessous pour les différentes combinaisons possibles de bases trial et test :
 
@@ -420,7 +424,8 @@ Pour `PatchwiseParametricBasis` et `CellwiseParametricBasis`, le module paramét
 Pour les deux méthodes DG et EF, la variable discrète est définie de manière similaire à partir des fonctions de base et des DOFs linéaires. La différence entre les deux méthodes réside dans la structure globale de l'espace discret et les contraintes de continuité. Ces points seront détaillés dans les fichiers dédiés à chacune des méthodes.
 </span>
 
-Dans la suite du document, on notera $u_h$ la variable discrète définie de manière globale sur $\Omega$.
+Dans la suite du document, on définit la solution continue $U : \Omega \to \mathbb{R}^{n_\text{out}}$ et sa variable discrète $U_h : \Omega \to \mathbb{R}^{n_\text{out}}$ (reconstruction à partir des DOFs linéaires). On définit également $\alpha \in \{0, \ldots, n_\text{out}-1\}$ un indice de composante de la solution, c'est-à-dire que $U_\alpha$ (resp. $U_{h,\alpha}$) désigne la $\alpha$-ème composante de la solution continue (resp. discrète).
+De manière équivalente, on peut introduire les fonctions de base et de test associées à la composante $\alpha$-ème de la solution, notées respectivement $\bar{\varphi}_{c,i,\alpha}$ et $\bar{\psi}_{c,i,\alpha}$.
 
 ## 6. Post-processing
 
@@ -429,10 +434,10 @@ Dans la suite du document, on notera $u_h$ la variable discrète définie de man
 Le post-processing, noté $\mathcal{P}$, est un opérateur qui agit sur la variable discrète reconstruite à partir des DOFs. Cet opérateur peut-être une fonction analytique (linéaire ou non-linéaire) ou un réseau de neurones `eqx.Module` (non-linéaire).
 
 On peut considérer deux types de processings :
-- **Local** : la valeur post-processée en un point $x$ dépend uniquement de la valeur reconstruite $u_h|_{K_c}(x)$ (dans la cellule $K_c$ contenant $x$), c'est-à-dire que la solution post-processée s'écrit :
-$$\bar{u_h}(x) = \mathcal{P}(u_h|_{K_c}, x), \qquad x \in K_c.$$
-- **Global** <span style="color: red;">(Non implémenté)</span> : la valeur post-processée en un point $x$ dépend de la valeur reconstruite $u_h$ sur l'ensemble du domaine $\Omega$, c'est-à-dire que la solution post-processée s'écrit :
-$$\bar{u_h}(x) = \mathcal{P}(u_h, x), \qquad x \in \Omega.$$
+- **Local** : la valeur post-processée en un point $x$ dépend uniquement de la valeur reconstruite $U_h|_{g(K_c)}(x)$ (dans la cellule physique $g(K_c)$ contenant $x$), c'est-à-dire que la solution post-processée s'écrit :
+$$\bar{U_h}(x) = \mathcal{P}(U_h|_{g(K_c)}, x), \qquad x \in g(K_c).$$
+- **Global** <span style="color: red;">(Non implémenté)</span> : la valeur post-processée en un point $x$ dépend de la valeur reconstruite $U_h$ sur l'ensemble du domaine $\Omega$, c'est-à-dire que la solution post-processée s'écrit :
+$$\bar{U_h}(x) = \mathcal{P}(U_h, x), \qquad x \in \Omega.$$
 
 ### Enregistrement comme pytree JAX
 
