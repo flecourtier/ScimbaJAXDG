@@ -49,12 +49,16 @@
 - [ ] Tester temps exécution entre newton normal et mat free pour la convergence du laplacien
 - [ ] Tester de demander à Claude de faire un code dg tout simple pour résoudre laplacien P1 sur un carré et comparer temps d'execution avec version scimba_jax_dg
 - [ ] (**Michel**) Est-ce qu'avec une base enrichie on gagne en ordre ? ou en constante de convergence ?  
+
 ## Solve DG - Multidimensionnel
 
 - [x] Adapter `Mesh` et `EllipticDGscheme` pour le cas multidimensionnel.
 - [x] Tester un problème de Poisson en $\mathbb{P1}$ sur un carré et vérifier les convergences.
 - [ ] <span style="color:red"><b>(Point 6)</b></span>
 	Tester en 3D.
+- [ ] Faire une advection en 2d dans la direction diagonale avec un peu de diffusion.
+	Comme dans le cas du papier, on a un gradient fort dans la direction (moins y a de diffusion plus c'est fort).
+	Ensuite on apprend juste le mapping et normalement il devrait apprendre à pousser les mailles là où y a les forts gradients.
 
 ## Solve FEM - 1D
 
