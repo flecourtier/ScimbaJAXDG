@@ -17,7 +17,7 @@ On définit également les notations suivantes pour l'implémentation spécifiqu
 
 > src/scimba_jax/linear_approximation/variables/variables_dg.py
 
-On considère donc un système de $n_\text{out}$ équations couplées à résoudre sur un domaine $\Omega \subset \mathbb{R}^d$ (ex : système de Navier-Stokes avec $n_\text{out}=4$ en 2D : vélocité (de taille $d$), pression, température).
+On considère un système de $n_\text{out}$ équations couplées à résoudre sur un domaine $\Omega \subset \mathbb{R}^d$ (ex : système de Navier-Stokes avec $n_\text{out}=4$ en 2D : vélocité (de taille $d$), pression, température).
 On définit la solution discrète $U_h : \Omega \to \mathbb{R}^{n_\text{out}}$ (reconstruite à partir des DOFs linéaires) et $U_{h,\alpha} : \Omega \to \mathbb{R}$ sa $\alpha$-ème composante, $\alpha \in \{0, \ldots, n_\text{out}-1\}$.
 
 En DG, on utilise deux écritures équivalentes de cette variable discrète :
@@ -95,15 +95,7 @@ via `jnp.linalg.lstsq`. Le VJP est défini via `jax.custom_vjp` (différentiatio
 >
 > En pratique, si on est dans le cas $\mathcal{P}_\theta$ (un réseau de neurones), toutes les composantes sont mélangées dans les couches cachées, donc tous les blocs hors-diagonale du Jacobien sont non nuls a priori. 
 
-### API publique
-
-| Méthode | Description |
-|---|---|
-| `project(f)` | Projette $f$, met à jour `dofsl` |
-| `project_jit(f)` | Idem avec JIT (compilé à la première appel, mis en cache) |
-
-
-## 9. Schéma DG elliptique (`EllipticDGscheme`)
+## Schéma elliptique (`EllipticDGscheme`)
 
 > src/scimba_jax/linear_approximation/dg/elliptic_dg_scheme.py
 
