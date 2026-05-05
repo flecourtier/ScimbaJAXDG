@@ -1,4 +1,4 @@
-# <span style="color:blue"><b>Tests & Exemples :</b></span> Classe `Variables` (project DG)
+# <span style="color:blue"><b>Tests & Exemples :</b></span> Classe `VariablesDG` (project DG)
 
 ## Project DG - 1D
 
@@ -6,7 +6,7 @@
 
 - [x] **Exemple 1.a (`variable.py`) :** (TEST)
 
-    - *Tester :* la classe `Variables` sans post-processing (PP None) avec une base analytique (Taylor).
+    - *Tester :* la classe `VariablesDG` sans post-processing (PP None) avec une base analytique (Taylor).
 
     - *Valider :* `classical_evaluation` et `classical_projection`.
 
@@ -21,11 +21,11 @@
 
 - [x] **Exemple 1.b (`variable_mixed_basis.py`) :** (TEST)
 
-    - *Tester :* la classe `Variables` sans post-processing (PP None) avec une base mixte (analytique dans la première cellule et réseau dans la deuxième cellule).
+    - *Tester :* la classe `VariablesDG` sans post-processing (PP None) avec une base mixte (analytique dans la première cellule et réseau dans la deuxième cellule).
 
 - [x] **Exemple 2 (`variable_local_post_processing.py`) :** 
 
-    - *Tester :* la classe `Variables` avec post-processing (PP analytique) et une base analytique (Taylor).
+    - *Tester :* la classe `VariablesDG` avec post-processing (PP analytique) et une base analytique (Taylor).
 
     - *Détails :* Considérer un PP linéaire et non-linéaire. Valider l'utilisation du newton en linéaire (avec 1 itération).
 
@@ -40,7 +40,7 @@
 
 - [x] **Exemple 3 (`variable_local_post_processing_NN.py`) :** 
 
-    - *Tester :* la classe `Variables` avec post-processing (PP réseau) et une base analytique (Taylor).
+    - *Tester :* la classe `VariablesDG` avec post-processing (PP réseau) et une base analytique (Taylor).
     
     - *Détails :* Prendre $f(x) = sin(x^2+1)$, $5$ mailles et des bases d'ordre 2. Entrainer le réseau : $min_\theta \|P_{PP}(u)-f\|^2$ où $P_{PP}(u)$ est la projectionavec post-processing.
 
@@ -54,7 +54,7 @@
 
 - [x] **Exemple 4.a (`variable_patchwise_basis.py`) :** 
 
-    - *Tester :* la classe `Variables` sans post-processing et une base réseau (`Patchwise`).
+    - *Tester :* la classe `VariablesDG` sans post-processing et une base réseau (`Patchwise`).
 
     - *Détails :* Ne pas utiliser les points de quadrature pour l'entrainement du réseau.
 
@@ -81,7 +81,7 @@
 
 - [x] **Exemple 5 (`variable_patchwise_basis_pretrained.py`) :** 
 
-    - *Tester :* la classe `Variables` sans post-processing et une base réseau pré-entraîné (`Patchwise`).
+    - *Tester :* la classe `VariablesDG` sans post-processing et une base réseau pré-entraîné (`Patchwise`).
 
     - *Détails :* Considérer $\phi_i^\theta(x) = v_\theta(x) \phi_i(x)$, où $v_\theta$ est un réseau de neurones (ex: MLP) pré-entrainés et $\phi_i$ une base analytique (Taylor).
 
@@ -96,7 +96,7 @@
 
 - [x] **Exemple 6 (`variable_cellwise_basis.py`) :** 
 
-    - *Tester :* la classe `Variables` sans post-processing et une base réseau (`Cellwise`).
+    - *Tester :* la classe `VariablesDG` sans post-processing et une base réseau (`Cellwise`).
 
     - *Détails :* Même exemple que exemple 4.a mais un réseau par maille. (On pourra essayer de rajouter une condition de continuité entre les mailles dans la loss pour voir l'impact).
 
@@ -112,7 +112,7 @@
 
 - [x] **Exemple 7 (`variable_cellwise_basis_and_local_post_processing_NN.py`) :** 
 
-    - *Tester :* la classe `Variables` avec post-processing (PP réseau) et une base réseau (`Cellwise`).
+    - *Tester :* la classe `VariablesDG` avec post-processing (PP réseau) et une base réseau (`Cellwise`).
 
     - *Valider :* `local_postprocessing_evaluate` et `projector_with_nonlinearlocal_postprocessing` (pour un PP apprenable et bases apprenable - `Cellwise`).
 
