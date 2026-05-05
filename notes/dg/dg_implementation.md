@@ -2,16 +2,9 @@
 
 <span style="color: blue;">Le fichier "implementation.md" contient toutes les informations communes à l'implémentation du schéma DG et du schéma FE.</span>
 
+<span style="color: blue;">On reprend toutes les notations utilisées dans le fichier `notations.md`.</span>
+
 <span style="color: red;">TODO : Définir les espaces d'approximation.</span>
-
-## Notations
-
-<span style="color: blue;">On reprend toutes les notations utilisées dans le document principal.</span>
-
-On définit également les notations suivantes pour l'implémentation spécifique à la méthode DG :
-
-- $u_{c,i,\alpha}$ : DOF linéaire associé à la $i$-ème fonction de base de la $c$-ème cellule et à la composante $\alpha$-ème de la solution
-- $\mathbf{u}_{c,\alpha} = (u_{c,i,\alpha})_{i=0}^{n_b-1}$ : vecteur des DOFs linéaires associés à la composante $\alpha$-ème de la solution dans la cellule $c$
 
 ## Variables
 
