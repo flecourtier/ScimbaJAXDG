@@ -2,7 +2,7 @@
 
 ## Solve DG - 1D
 
-### Exemple sans apprentissage
+### Exemples sans apprentissage
 
 - [x] **Exemple 1.a (`solve_laplacian_polynomial_solution_SIPG.py`) :**
 
@@ -34,7 +34,7 @@
 
     - *Tester :* la classe `EllipticDGscheme` pour la résolution de l'équation de diffusion/advection/réaction avec une base analytique (Taylor).
 
-### Exemple avec apprentissage (via classe `DGEllipticApproximationSpace`)
+### Exemples avec apprentissage (via classe `DGEllipticApproximationSpace`)
 
 - [x] **Exemple 1.a (`dgelliptic_patchwise_basis.py`) :** [(voir)](images/solve/dgelliptic_patchwise_basis.png)
 
