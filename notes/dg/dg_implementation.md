@@ -87,3 +87,102 @@ via `jnp.linalg.lstsq`. Le VJP est défini via `jax.custom_vjp` (différentiatio
 > Et ainsi $\frac{\partial R_{j,0}}{\partial u_{c,i,1}} \neq 0$, ce qui signifie que le résidu sur la composante $0$ dépend des DOFs de la composante $1$ via le post-processing $\mathcal{P}$. C'est pourquoi, il est nécessaire de résoudre un système global sur toutes les composantes à la fois.
 >
 > En pratique, si on est dans le cas $\mathcal{P}_\theta$ (un réseau de neurones), toutes les composantes sont mélangées dans les couches cachées, donc tous les blocs hors-diagonale du Jacobien sont non nuls a priori. 
+
+
+## Schéma elliptique (`EllipticDGscheme`)
+
+> src/scimba_jax/linear_approximation/dg/elliptic_dg_scheme.py
+
+TODO
+
+<!-- ### Terme de flux
+
+> src/scimba_jax/linear_approximation/dg/flux.py
+
+**Interface numérique (`AbstractFlux`) :**
+
+Considérons $n_f=n_\text{cells}+1$ le nombre de faces et $l \in \{1, ..., n_f-2\}$ (`idf`) un indice de face intérieure.
+
+On définit $C_L$ et $C_R$ comme les deux cellules voisines (gauche et droite) de la face $F_l$ .
+
+Le flux numérique est défini par la classe abstraite `AbstractFlux` via `__call__(varL, varR)` où `varL` (resp. `varR`) est définit par :
+
+$$\text{var}_L = (u_L,\ v_L,\ \nabla u_L,\ \nabla v_L,\ n_L,\ \text{fields}_L)$$
+
+où $u_L$ (resp. $u_R$) est la solution dans la cellule $C_L$ (resp. $C_R$), $\nabla u_L$ (resp. $\nabla u_R$) est le gradient de la solution dans la cellule $C_L$ (resp. $C_R$), $n_L=-1$ (resp. $n_R=1$) est la normale sortante de $C_L$ (resp. $C_R$) et $\text{fields}_L$ (resp. $\text{fields}_R$) est le vecteur des champs dans la cellule $C_L$ (resp. $C_R$).
+
+**Assemblage local (`assembly_local_flux_term`) :**
+
+Pour la face $F_l$ et la $j$-ème fonction test, la contribution du flux est intégrée sur la face (intégration surfacique) :
+
+$$\mathcal{F}_{l,j} \approx \sum_q w_q\, \texttt{flux}\!\left(\text{var}_L,\ \text{var}_R\right) \in \mathbb{R}^{n_\text{out}}$$
+
+où `flux` désigne le callable de `AbstractFlux.__call__(varL, varR)`.
+
+La fonction retourne les contributions aux deux mailles voisines avec **signe opposé** (le même `summed_flux`, calculé une seule fois par face) :
+
+$$\text{résidu de } C_L \mathrel{-}= \mathcal{F}_{l,j} \qquad \text{résidu de } C_R \mathrel{+}= \mathcal{F}_{l,j}$$
+
+Ce signe opposé vient de l'intégration par parties dans la formulation DG continue : le terme de bord apparaît en soustraction pour $C_L$ et en addition pour $C_R$.
+
+### Termes de volume
+
+**Formulation faible locale :**
+
+Considérons $k\in\{0,\dots,n_\text{cells}-1\}$ (`idx`) un indice de cellule.
+
+Pour chaque maille $C_k$, on cherche les degrés de liberté $U_k = (u_{k,i})_i$ tels que :
+
+$$\underbrace{\int_{C_k} B(u_h, \bar{\varphi}_{k,j})}_{b_{k,j}} = \underbrace{\int_{C_k} L(\bar{\varphi}_{k,j})}_{l_{k,j}} \quad \forall j \in \{0, \ldots, n_b - 1\}$$
+
+où :
+- $B(\cdot, \cdot)$ est la **forme bilinéaire** (`bilinear_form`) : dépend de la solution $u_h$ (trial) et de la fonction test $v$
+- $L(\cdot)$ est la **forme linéaire** (`linear_form`) : dépend uniquement de la fonction test $v$
+
+**Assemblage local (`assembly_local_volume_terms`) :**
+
+La fonction calcule, pour la maille $C_k$ et la $j$-ème fonction test $\bar{\varphi}_{k,j}$, les deux quantités scalaires suivantes :
+
+$$b_{k,j} = \int_{C_k} B(u_h, \bar{\varphi}_{k,j}) \approx \sum_q w_q\, B(u_h(x_q),\, \bar{\varphi}_{k,j}(x_q))$$
+
+$$l_{k,j} = \int_{C_k} L(\bar{\varphi}_{k,j}) \approx \sum_q w_q\, L(\bar{\varphi}_{k,j}(x_q))$$
+
+*Il n'y a pas d'indice trial $i$ séparé* : la solution $u_h|_{C_k}(x) = \sum_i u_{k,i}\, \bar{\varphi}_{k,i}(x)$ est déjà entièrement sommée dans `local_variables(idx)`. Ainsi, $b_{k,j}$ est directement le $j$-ème composant du produit matrice-vecteur $A_k U_k$ (pas la matrice $A_k$ elle-même).
+
+### Assemblage du schéma complet
+
+`assembly_scheme()` combine les termes de volume et de flux en un seul vecteur résidu de taille $n_\text{cells} \cdot n_b \cdot n_\text{out}$.
+
+**1. Termes de volume** (vmap sur les cellules et les fonctions test) :
+
+```python
+res = jax.vmap(
+    lambda idx: jax.vmap(
+        lambda j: scheme_pytree.assembly_local_full_volume_term(idx, j)
+    )(basis_indices)           # vmap sur j ∈ [0, n_b-1]
+)(jnp.arange(mesh.n_\text{cells}ells))   # vmap sur k ∈ [0, n_\text{cells}-1]
+# res : b_{k,j} - l_{k,j} pour chaque (k, j) -> (n_\text{cells}, n_b, n_\text{out})  
+```
+
+où `assembly_local_full_volume_term(idx, j)` retourne $b_{k,j} - l_{k,j}$ (résidu local).
+
+**2. Termes de flux** (vmap sur les faces et les fonctions test) :
+
+```python
+(idxL, fluxL), (idxR, fluxR) = jax.vmap(
+    lambda idf: jax.vmap(
+        lambda j: scheme_pytree.assembly_local_flux_term(idf, j)
+    )(basis_indices)            # vmap sur j ∈ [0, n_b-1]
+)(jnp.arange(mesh.n_faces))    # vmap sur l ∈ [0, n_faces-1]
+# fluxL, fluxR : (n_faces, n_b, n_\text{out})
+# idxL, idxR   : (n_faces, n_b)
+
+res = res.at[idxL, basis_indices].add(fluxL)
+res = res.at[idxR, basis_indices].add(fluxR)
+```
+
+**3. Reshape en vecteur :**
+
+```python
+res = jnp.reshape(res, (-1,))  # (n_\text{cells} * n_b * n_\text{out},)
+``` -->
