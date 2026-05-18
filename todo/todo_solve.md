@@ -1,5 +1,7 @@
 # <span style="color:blue"><b>TODO :</b></span> Classe `EllipticDGscheme` (solve DG)
 
+<span style="color:red"><b>(Point ..)</b></span> : mail d'Emmanuel du 18 avril
+<span style="color:green"><b>(Point ..)</b></span> : mail d'Emmanuel du 15 mai
 ## Solve DG - 1D
 
 ## Sans apprentissage
@@ -36,16 +38,16 @@
 - [x] Si tout marche bien, on est censé pouvoir faire l'optimisation du Laplacien. On résout le lap en dg avec très peu de mailles, ensuite on utilise un PINN qui prend en entrée le `dg_elliptic` qui va optimiser les bases (patchwise) de façon à résoudre au mieux le laplacien.
 - [x] Tester de rajouter un mapping entraînable en plus des bases patchwise.
 - [x] Tester version bases cellwise
-- [ ] Tester bases patchwise avec version matrix-free. Dans les 2 cas, il faut faire le VJP avec une inversion de matrice (pour le matrix-free on fait un cg où matvec c'est $J^T * v$ avec une iter pour le cg mais pas de newton)
+- [ ] <span style="color:green"><b>(Point 1)</b></span> Tester bases patchwise avec version matrix-free. Dans les 2 cas, il faut faire le VJP avec une inversion de matrice (pour le matrix-free on fait un cg où matvec c'est $J^T * v$ avec une iter pour le cg mais pas de newton)
 		-> tester de jiter "matvec" dans version matrix-free
-- [ ] <span style="color:red"><b>(Point 1)</b></span>
+- [ ] <span style="color:red"><b>(Point 1)</b></span> <span style="color:green"><b>(Point 2)</b></span>
 	Tester le non-linéaire avec $-\nabla\cdot(A(u,x)\nabla u) + b(u,x)\cdot\nabla u + c(u,x) = f(x)$ où $u=u_\theta(x)$. 
 	Attention : la composition ne peut pas prendre $u$ directement (écrire la lambda fonction comme lambda x: x^2 où x est u). 
 - [ ] Plus tard : tester si on apprend un flux, qu'est-ce qui se passe...
 
 **Performances:**
 
-- [ ] Regarder les modifs d'Emmanuel et de Victor.
+- [x] Regarder les modifs d'Emmanuel et de Victor.
 - [ ] Tester temps exécution entre newton normal et mat free pour la convergence du laplacien
 - [ ] Tester de demander à Claude de faire un code dg tout simple pour résoudre laplacien P1 sur un carré et comparer temps d'execution avec version scimba_jax_dg
 - [ ] (**Michel**) Est-ce qu'avec une base enrichie on gagne en ordre ? ou en constante de convergence ?  
@@ -63,8 +65,12 @@
 ## Solve FEM - 1D
 
 - [x] Modifier Variables en VariablesDG.
-- [ ] <span style="color:red"><b>(Point 2)</b></span> Implémenter VariablesFE (en plus de VariablesDG). On a moins de dofsl car il y a des dofs partagés. Ajouter a une fonction qui permet de récupérer à partir de la cellule local, l'indice global du dofs dans dofsl.
-- [ ] Tester un laplacien Dirichlet avec VariablesFE.
+- [ ] <span style="color:red"><b>(Point 2)</b></span> <span style="color:green"><b>(Point 4.a)</b></span> Implémenter VariablesFE (en plus de VariablesDG). On a moins de dofsl car il y a des dofs partagés. Ajouter a une fonction qui permet de récupérer à partir de la cellule local, l'indice global du dofs dans dofsl.
+- [ ] <span style="color:green"><b>(Point 4.b)</b></span> Tester un laplacien Dirichlet avec VariablesFE.
 - [x] <span style="color:red"><b>(Point 4)</b></span> Implémenter les bases de Lagrange + tester.
 - [ ] Adapter l'implémentation des bases de Taylor [(Thèse - Taylor DG)](https://theses.hal.science/tel-00765575/document).
-- [ ] Tester d'implémenter $\varphi$-FEM Dirichlet.
+
+## Solve FEM - Multidimensionnel
+
+- [ ] <span style="color:green"><b>(Point 4.c)</b></span> Tester d'implémenter $\varphi$-FEM Dirichlet en 2D.
+- [ ] <span style="color:green"><b>(Point 5)</b></span> Valider FEM en 3D.
