@@ -38,11 +38,9 @@
 - [x] Si tout marche bien, on est censé pouvoir faire l'optimisation du Laplacien. On résout le lap en dg avec très peu de mailles, ensuite on utilise un PINN qui prend en entrée le `dg_elliptic` qui va optimiser les bases (patchwise) de façon à résoudre au mieux le laplacien.
 - [x] Tester de rajouter un mapping entraînable en plus des bases patchwise.
 - [x] Tester version bases cellwise
-- [ ] <span style="color:green"><b>(Point 1)</b></span> Tester bases patchwise avec version matrix-free. Dans les 2 cas, il faut faire le VJP avec une inversion de matrice (pour le matrix-free on fait un cg où matvec c'est $J^T * v$ avec une iter pour le cg mais pas de newton)
-		-> tester de jiter "matvec" dans version matrix-free
-- [ ] <span style="color:red"><b>(Point 1)</b></span> <span style="color:green"><b>(Point 2)</b></span>
-	Tester le non-linéaire avec $-\nabla\cdot(A(u,x)\nabla u) + b(u,x)\cdot\nabla u + c(u,x) = f(x)$ où $u=u_\theta(x)$. 
-	Attention : la composition ne peut pas prendre $u$ directement (écrire la lambda fonction comme lambda x: x^2 où x est u). 
+- [x] <span style="color:green"><b>(Point 1)</b></span> Tester bases patchwise avec version matrix-free. Dans les 2 cas, il faut faire le VJP avec une inversion de matrice (pour le matrix-free on fait un cg où matvec c'est $J^T * v$ avec une iter pour le cg mais pas de newton) -> tester de jiter "matvec" dans version matrix-free
+- [x] <span style="color:red"><b>(Point 1)</b></span> <span style="color:green"><b>(Point 2)</b></span> Tester le non-linéaire avec $-\nabla\cdot(A(u,x)\nabla u) + b(u,x)\cdot\nabla u + c(u,x) = f(x)$ où $u=u_\theta(x)$. 	Attention : la composition ne peut pas prendre $u$ directement (écrire la lambda fonction comme lambda x: x^2 où x est u). 
+- [ ] Pour le non linéaire, $A$ doit dépendre aussi de $\nabla u$.	
 - [ ] Plus tard : tester si on apprend un flux, qu'est-ce qui se passe...
 
 **Performances:**
@@ -56,8 +54,7 @@
 
 - [x] Adapter `Mesh` et `EllipticDGscheme` pour le cas multidimensionnel.
 - [x] Tester un problème de Poisson en $\mathbb{P1}$ sur un carré et vérifier les convergences.
-- [ ] <span style="color:red"><b>(Point 6)</b></span>
-	Tester en 3D.
+- [ ] <span style="color:red"><b>(Point 6)</b></span> Tester en 3D.
 - [ ] Faire une advection en 2d dans la direction diagonale avec un peu de diffusion.
 	Comme dans le cas du papier, on a un gradient fort dans la direction (moins y a de diffusion plus c'est fort).
 	Ensuite on apprend juste le mapping et normalement il devrait apprendre à pousser les mailles là où y a les forts gradients.
@@ -65,12 +62,12 @@
 ## Solve FEM - 1D
 
 - [x] Modifier Variables en VariablesDG.
-- [ ] <span style="color:red"><b>(Point 2)</b></span> <span style="color:green"><b>(Point 4.a)</b></span> Implémenter VariablesFE (en plus de VariablesDG). On a moins de dofsl car il y a des dofs partagés. Ajouter a une fonction qui permet de récupérer à partir de la cellule local, l'indice global du dofs dans dofsl.
-- [ ] <span style="color:green"><b>(Point 4.b)</b></span> Tester un laplacien Dirichlet avec VariablesFE.
+- [x] <span style="color:red"><b>(Point 2)</b></span> <span style="color:green"><b>(Point 4.a)</b></span> Implémenter VariablesFE (en plus de VariablesDG). On a moins de dofsl car il y a des dofs partagés. Ajouter une fonction qui permet de récupérer à partir de la cellule local, l'indice global du dofs dans dofsl.
+- [x] <span style="color:green"><b>(Point 4.b)</b></span> Tester un laplacien Dirichlet avec VariablesFE.
 - [x] <span style="color:red"><b>(Point 4)</b></span> Implémenter les bases de Lagrange + tester.
 - [ ] Adapter l'implémentation des bases de Taylor [(Thèse - Taylor DG)](https://theses.hal.science/tel-00765575/document).
 
 ## Solve FEM - Multidimensionnel
 
-- [ ] <span style="color:green"><b>(Point 4.c)</b></span> Tester d'implémenter $\varphi$-FEM Dirichlet en 2D.
+- [x] <span style="color:green"><b>(Point 4.c)</b></span> Tester d'implémenter $\varphi$-FEM Dirichlet en 2D.
 - [ ] <span style="color:green"><b>(Point 5)</b></span> Valider FEM en 3D.
