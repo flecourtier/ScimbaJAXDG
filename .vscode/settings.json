@@ -1,0 +1,31 @@
+{
+  "latex-workshop.latex.recipe.default": "results (latexmk only)",
+  "latex-workshop.formatting.latex": "latexindent",
+  "latex-workshop.latexindent.args": ["-w", "%DOC_EXT%"],
+  "[latex]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "James-Yu.latex-workshop"
+  },
+  "explorer.excludeGitIgnore": true,
+  "latex-workshop.latex.tools": [
+    {
+      "name": "latexmk-lualatex",
+      "command": "latexmk",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-lualatex",
+        "-shell-escape",
+        "%DOC%"
+      ],
+      "env": {}
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "results (latexmk only)",
+      "tools": ["latexmk-lualatex"]
+    }
+  ],
+}

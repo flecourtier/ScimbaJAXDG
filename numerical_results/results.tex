@@ -26,36 +26,25 @@
 % ── Divers ─────────────────────────────────────────────────────────────────────
 \usepackage{microtype}
 
-% ── Macros ─────────────────────────────────────────────────────────────────────
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\Th}{\mathcal{T}_h}
-% \newcommand{\Omega}{\Omega}
-\newcommand{\norm}[1]{\left\| #1 \right\|}
-
-% ══════════════════════════════════════════════════════════════════════════════
-\title{\textbf{Résultats numériques — Base patchwise}\\
-       \large ScimbaJAX-DG}
+\title{\textbf{Résultats numériques - DG apprenable}\\
+\large ScimbaJAX-DG}
 \author{Frédérique Lecourtier}
 \date{\today}
-% ══════════════════════════════════════════════════════════════════════════════
 
 \begin{document}
 
 \maketitle
-\tableofcontents
-
-\vfill
-
-\section{Contexte}
 
 Lorsqu'on fait des bases apprenable en DG, on a plusieurs moyen d'améliorer la solution :
 \begin{itemize}
-    \item raffiner le maillage 
-    \item augmenter le nombre de base par maille 
-    \item augmenter le nombre de paramètres du réseau 
+    \item raffiner le maillage
+    \item augmenter le nombre de base par maille
+    \item augmenter le nombre de paramètres du réseau
 \end{itemize}
 
 Question centrale : Comment se comporte l'erreur ?
+
+\tableofcontents
 
 \newpage
 \section{Configuration des cas tests}
@@ -63,6 +52,33 @@ Question centrale : Comment se comporte l'erreur ?
 \subsection{Cas 1D}
 
 \subsection{Cas 2D}
+
+\newpage
+\section{Bases Analytiques}
+
+\subsection{Évolution de l'erreur et du conditionnement en fonction...}
+
+\subsubsection{...du nombre de cellules}
+
+\begin{itemize}
+    \item ($\nearrow$) nombre de cellules
+    \item (fixé) nombre de base par maille
+\end{itemize}
+
+\paragraph{Erreur}
+
+\paragraph{Conditionnement}
+
+\subsubsection{...du nombre de base par maille}
+
+\begin{itemize}
+    \item (fixé) nombre de cellules
+    \item ($\nearrow$) nombre de base par maille
+\end{itemize}
+
+\paragraph{Erreur}
+
+\paragraph{Conditionnement}
 
 \newpage
 \section{Bases Patchwise}
