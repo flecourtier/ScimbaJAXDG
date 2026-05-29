@@ -1,0 +1,38 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% REGISTRE DE STYLES
+%
+% À définir UNE FOIS en préambule.
+%
+% \definemethodstyle{nom}{options pgfplots}
+%   couleur + linestyle selon la méthode
+%
+% \definedegstyle{degré}{options pgfplots}
+%   marker selon le degré polynomial
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\definemethodstyle}[2]{%
+    \pgfkeys{/cvg/method/#1/.style={#2}}%
+}
+
+\newcommand{\definedegstyle}[2]{%
+    \pgfkeys{/cvg/degree/#1/.style={#2}}%
+}
+
+% Couleurs
+
+\definecolor{dgcolorSIPG}{RGB}{51, 138, 55}
+\definecolor{dgcolorNIPG}{RGB}{217,95,2}
+\definecolor{dgcolorBZ}{RGB}{199,39,34}
+
+% Styles des méthodes DG (couleur + linestyle)
+
+\definemethodstyle{DG SIPG}{color=dgcolorSIPG, solid, line width=0.8pt}
+\definemethodstyle{DG NIPG}{color=dgcolorNIPG, solid, line width=0.8pt}
+\definemethodstyle{DG BZ}{color=dgcolorBZ, solid, line width=0.8pt}
+
+% Markers par défaut selon le degré
+
+\definedegstyle{1}{mark=square*, mark size=2}
+\definedegstyle{2}{mark=*, mark size=2}
+\definedegstyle{3}{mark=triangle*, mark size=2}

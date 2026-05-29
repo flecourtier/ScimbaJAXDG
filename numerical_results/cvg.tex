@@ -1,10 +1,10 @@
-\input{preamble/slopes}
+\input{slopes}
 
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
-\usepackage{datatool}
+\usepackage{etoolbox}
 \usepackage{fp}
 
 \pgfplotsset{
@@ -35,159 +35,237 @@
 }
 \usepgfplotslibrary{fillbetween}
 
-\gdef\iterator{0}
+%%%%%%%%%%%%
+% Tailles
+%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plot styles for convergence plots %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Largeur/hauteur internes du loglogaxis (taille "native" avant mise à l'échelle).
+% Le tikzpicture est ensuite automatiquement redimensionné à \linewidth.
+% Modifiables avec \renewcommand avant cvgh si besoin.
+\newcommand{\cvgplotwidth}{7.5cm}
+\newcommand{\cvgplotheight}{5cm}
 
-% Define colors
-\definecolor{femcolor}{RGB}{51, 138, 55} %Green (27,158,119)
-\definecolor{addcolor}{RGB}{217,95,2} %Orange
-\definecolor{add2color}{RGB}{199,39,34} %Red (other prior)
-\definecolor{add3color}{RGB}{228, 155, 15} %Dark Yellow (another prior)
-\definecolor{multcolor3}{RGB}{117,112,179} %Purple 
-\definecolor{multcolor100}{RGB}{0,0,0} %Black (+ empty marker)
-\definecolor{multcolor0weak}{RGB}{49, 73, 181} %Blue
-\definecolor{multcolor0strong}{RGB}{49, 181, 161} %Cyan
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MACHINERIE INTERNE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Define line styles according to the method 
-% FEM : solid / Add : dashed / Mult : dotted
+\newtoks\cvg@serieslist
+\newtoks\cvg@toks
+\gdef\cvg@reffile{}
+\gdef\cvg@currentcol{errL2}
+\gdef\cvg@currentlabel{$L^2$}
+\gdef\cvg@slopes{}
+\gdef\cvg@ypos{}
+\gdef\cvg@xticklabrot{}
+\gdef\cvg@xticklabshift{0pt}
+\gdef\cvg@xmin{}
+\gdef\cvg@xmax{}
+\gdef\cvg@ymin{}
+\gdef\cvg@ymax{}
+\gdef\cvg@legendcols{1}
+\gdef\cvg@iter{0}
 
-% Define marker styles according to the degree
-% P1 : square / P2 : circle / P3 : triangle
+% Keys pour \addseries (label= et type=)
+\pgfkeys{
+    /cvg/series/.is family, /cvg/series,
+    label/.code={\def\cvg@label{#1}},
+    type/.code={\def\cvg@type{#1}},
+}
 
-% Define plot sizes
-\newlength{\plotwidth}
-\setlength{\plotwidth}{0.45\textwidth}
-\newlength{\plotheight}
-\setlength{\plotheight}{0.3\textwidth}
+% Tracer une série avec style méthode+degré du registre
+% Utilise \cvg@currentcol au moment de l'appel
+\newcommand{\cvg@plotone}[4]{%
+    \edef\cvg@col{\cvg@currentcol}%
+    \addplot[/cvg/method/#1, /cvg/degree/#2, mark options={solid}]
+    table[x=h, y=\cvg@col, col sep=comma]{#3};%
+    \addlegendentry{\,#4\;}%
+}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% General cvg h environment %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tracer une série avec style libre
+\newcommand{\cvg@plotraw}[3]{%
+    \edef\cvg@col{\cvg@currentcol}%
+    \addplot[#3, mark options={solid}]
+    table[x=h, y=\cvg@col, col sep=comma]{#1};%
+    \addlegendentry{\,#2\;}%
+}
 
-\newenvironment{cvgh}[6][]{
-    \begin{tikzpicture}[every node/.style={inner sep=0.5,outer sep=0.5}]
-        \edef\filename{#2}
-        \edef\legendcolumns{#3}
-        \edef\slopes{#4}
-        \edef\ypos{#5}
-        \edef\normtype{#6} % L2 or H1
-        \edef\extraoptions{#1}
+% Fixer la colonne CSV et le label selon la norme
+\newcommand{\cvg@setnorm}[1]{%
+    \ifstrequal{#1}{L2}{%
+        \gdef\cvg@currentcol{errL2}%
+        \gdef\cvg@currentlabel{$L^2$}%
+    }{}%
+    \ifstrequal{#1}{H1semi}{%
+        \gdef\cvg@currentcol{errH1semi}%
+        \gdef\cvg@currentlabel{Semi-$H^1$}%
+    }{}%
+    \ifstrequal{#1}{Linf}{%
+        \gdef\cvg@currentcol{errLinf}%
+        \gdef\cvg@currentlabel{$L^\infty$}%
+    }{}%
+}
 
-        % Read the CSV file into a table
-        \pgfplotstableread[col sep=comma]{\filename}\datatable
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% API PUBLIQUE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        % Obtenir le second élément
-        \pgfmathtruncatemacro{\secondrow}{1} % Index de la dernière ligne
-        \pgfplotstablegetelem{\secondrow}{h}\of\datatable
-        \pgfmathsetmacro{\second}{\pgfplotsretval} % Dernière valeur de h_rounded
+% \addseries[label=..., type=Q]{méthode}{degré}{fichier.csv}
+%   label : remplace le NOM de la méthode (le P/Q_deg est toujours ajouté)
+%   type  : P (défaut) ou Q
+\newcommand{\addseries}[4][]{%
+    \def\cvg@label{}\def\cvg@type{P}%
+    \pgfkeys{/cvg/series, #1}%
+    % Nom affiché : label= s'il est fourni, sinon le nom de méthode
+    \ifx\cvg@label\empty \def\cvg@nameonly{#2}\else \let\cvg@nameonly\cvg@label\fi%
+    % Label complet : nom + P/Q_deg (\unexpanded protège le math dans \protected@edef)
+    \def\cvg@Qtmp{Q}%
+    \ifx\cvg@type\cvg@Qtmp
+        \protected@edef\cvg@label{\cvg@nameonly\unexpanded{ $\mathbb{Q}_{#3}$}}%
+    \else
+        \protected@edef\cvg@label{\cvg@nameonly\unexpanded{ $\mathbb{P}_{#3}$}}%
+    \fi
+    \ifx\cvg@reffile\empty \xdef\cvg@reffile{#4}\fi%
+    \cvg@toks=\expandafter{\cvg@label}%
+    \protected@edef\cvg@tmp{%
+        \unexpanded\expandafter{\the\cvg@serieslist}%
+        \noexpand\cvg@plotone{#2}{#3}{#4}{\the\cvg@toks}%
+    }%
+    \global\cvg@serieslist=\expandafter{\cvg@tmp}%
+}
 
-        % Obtenir le premier élément
-        \pgfmathtruncatemacro{\firstrow}{0} % Index de l'avant-dernière ligne
-        \pgfplotstablegetelem{\firstrow}{h}\of\datatable
-        \pgfmathsetmacro{\first}{\pgfplotsretval} % Avant-dernière valeur de h_rounded
+% \addrawseries{fichier.csv}{label légende}{options pgfplots}
+%   Style entièrement libre (hors registre).
+\newcommand{\addrawseries}[3]{%
+    \ifx\cvg@reffile\empty \xdef\cvg@reffile{#1}\fi%
+    \protected@edef\cvg@tmp{%
+        \unexpanded\expandafter{\the\cvg@serieslist}%
+        \noexpand\cvg@plotraw{#1}{#2}{#3}%
+    }%
+    \global\cvg@serieslist=\expandafter{\cvg@tmp}%
+}
 
-        % Calculer la différence entre les deux
-        \pgfmathsetmacro{\diff}{\first - \second}
+% \setslopes{liste de pentes}{ypos}
+%   Exemple : \setslopes{2,3}{1e-4}
+\newcommand{\setslopes}[2]{%
+    \gdef\cvg@slopes{#1}%
+    \gdef\cvg@ypos{#2}%
+}
 
-        %update iterator
-        \pgfmathtruncatemacro{\iterator}{\iterator+1}
+% \setxtickrotate[yshift]{angle}
+%   Exemple : \setxtickrotate{45}  ou  \setxtickrotate[-5pt]{45}
+\newcommand{\setxtickrotate}[2][0pt]{%
+    \gdef\cvg@xticklabrot{#2}%
+    \gdef\cvg@xticklabshift{#1}%
+}
 
+% \setxlimits{min}{max}  /  \setylimits{min}{max}
+%   Exemple : \setxlimits{1e-3}{1e-1}
+\newcommand{\setxlimits}[2]{%
+    \gdef\cvg@xmin{#1}%
+    \gdef\cvg@xmax{#2}%
+}
+\newcommand{\setylimits}[2]{%
+    \gdef\cvg@ymin{#1}%
+    \gdef\cvg@ymax{#2}%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ENVIRONNEMENT cvgh
+%
+% Crée un graphique de convergence autonome (tikzpicture).
+% À placer dans une subfigure ou seul.
+%
+% Arguments :
+%   [legendcols] : colonnes de légende (défaut : 1)
+%   {norme}      : L2, H1semi ou Linf
+%
+% Contenu :
+%   \addseries[label=..., type=Q]{méthode}{degré}{fichier.csv}
+%     label auto si omis : "méthode $\mathbb{P/Q}_{degré}$"
+%     type=P (défaut) ou Q
+%   \addrawseries{fichier.csv}{label}{options pgfplots}
+%   \setslopes{pentes}{ypos}
+%   \setxtickrotate[yshift]{angle}  (optionnel, ex: \setxtickrotate[-5pt]{45})
+%   \setxlimits{min}{max}           (optionnel, ex: \setxlimits{1e-3}{1e-1})
+%   \setylimits{min}{max}           (optionnel, ex: \setylimits{1e-6}{1e-1})
+%
+% Exemple :
+%   \begin{cvgh}[2]{L2}
+%     \addseries{DG SIPG}{1}{results/DG_SIPG_P1.csv}
+%     \addseries[type=Q]{DG NIPG}{1}{results/DG_NIPG_P1.csv}
+%     \addseries[label=BZ custom]{DG BZ}{1}{results/DG_BZ_P1.csv}  % → "BZ custom $\mathbb{P}_1$"
+%     \setslopes{2}{1e-4}
+%   \end{cvgh}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newenvironment{cvgh}[2][1]{%
+% Incrémenter le compteur global
+\pgfmathtruncatemacro{\cvg@iter}{\cvg@iter+1}%
+\xdef\cvg@iter{\cvg@iter}%
+% Réinitialiser l'état
+\global\cvg@serieslist={}%
+\gdef\cvg@reffile{}%
+\gdef\cvg@slopes{}%
+\gdef\cvg@ypos{}%
+\gdef\cvg@xticklabrot{}%
+\gdef\cvg@xticklabshift{0pt}%
+\gdef\cvg@xmin{}%
+\gdef\cvg@xmax{}%
+\gdef\cvg@ymin{}%
+\gdef\cvg@ymax{}%
+\gdef\cvg@legendcols{#1}%
+% Fixer la norme
+\cvg@setnorm{#2}%
+}{%
+% Lire le CSV de référence pour les ticks en x et les pentes
+\pgfplotstableread[col sep=comma]{\cvg@reffile}\cvg@datatable%
+\pgfplotstablegetelem{0}{h}\of\cvg@datatable%
+\pgfmathsetmacro{\cvg@hfirst}{\pgfplotsretval}%
+\pgfplotstablegetelem{1}{h}\of\cvg@datatable%
+\pgfmathsetmacro{\cvg@hsecond}{\pgfplotsretval}%
+\pgfmathsetmacro{\cvg@hdiff}{\cvg@hfirst - \cvg@hsecond}%
+%
+\resizebox{\linewidth}{!}{%
+    \begin{tikzpicture}[every node/.style={inner sep=0.5, outer sep=0.5}]
+        \ifx\cvg@xticklabrot\empty\else
+            \pgfplotsset{xticklabel style={rotate=\cvg@xticklabrot, anchor=east, yshift=\cvg@xticklabshift}}%
+        \fi
+        \ifx\cvg@xmin\empty\else
+            \pgfplotsset{xmin=\cvg@xmin, xmax=\cvg@xmax}%
+        \fi
+        \ifx\cvg@ymin\empty\else
+            \pgfplotsset{ymin=\cvg@ymin, ymax=\cvg@ymax}%
+        \fi
         \begin{loglogaxis}[
                 smaller labels,
-                name = left_plot,
-                % axis lines
-                axis lines = left,
+                name=cvgaxis\cvg@iter,
+                axis lines=left,
                 enlarge x limits={abs=10pt},
                 enlarge y limits={abs=10pt},
-                % axis x line shift = -5pt,
-                % axis y line shift = -5pt,
-                % labels
-                xmode=log,
-                xlabel = {$h$},
-                ylabel = {\rotatebox{270}{\normtype}},
-                xlabel style={at={(ticklabel* cs:1.01)},anchor=south west},
-                ylabel style={at={(ticklabel* cs:1.01)},anchor=west},
-                % ticks and labels
+                xlabel={$h$},
+                ylabel={\rotatebox{270}{\cvg@currentlabel}},
+                xlabel style={at={(ticklabel* cs:1.01)}, anchor=south west},
+                ylabel style={at={(ticklabel* cs:1.01)}, anchor=west},
                 xtick=data,
-                xticklabels from table={\datatable}{h},
-                % size
-                width=\plotwidth, height=\plotheight,
-                % marks
+                xticklabels from table={\cvg@datatable}{h},
+                width=\cvgplotwidth, height=\cvgplotheight,
                 mark options={solid, scale=1},
-                % grid
-                grid = major,
-                % legend
-                legend columns=\legendcolumns,
-                legend to name=leg:legendFEMCORR_\iterator,
+                ytick style={draw=none},
+                grid=major,
+                legend columns=\cvg@legendcols,
+                legend to name=cvgleg\cvg@iter,
                 legend image post style={mark options={solid, scale=1}},
-                \extraoptions % <--- Ajout des options supplémentaires ici
             ]
-            \expandafter\printslopeinv\expandafter{\slopes}{\second}{\ypos}{\diff}
-            }
-            {
+            % Triangles de pente (si définis)
+            \ifx\cvg@slopes\empty\else
+                \expandafter\printslopeinv\expandafter{\cvg@slopes}%
+                {\cvg@hsecond}{\cvg@ypos}{\cvg@hdiff}%
+            \fi
+            % Tracer toutes les séries
+            \the\cvg@serieslist
         \end{loglogaxis}
-        \node[yshift=-20pt] at (left_plot.outer south) {\pgfplotslegendfromname{leg:legendFEMCORR_\iterator}};
-
-    \end{tikzpicture}
-}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% FEM vs Add, all degrees %
-% L2 norm or H1 semi-norm %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% use in : ell2D.tex + lap2D_mixed.tex + lap2D.tex (Low frequency + High frequency)
-
-\newcommand{\cvgFEMCorrAlldegGeneral}[5]{
-    \edef\fem{#1}
-    \edef\add{#2}
-
-    \begin{cvgh}{\fem}{3}{#3}{#4}{#5}
-        % Complete the legend
-        \addlegendentry{\,FEM $\mathbb{P}_1$\;}
-        \addlegendentry{\,FEM $\mathbb{P}_2$\;}
-        \addlegendentry{\,FEM $\mathbb{P}_3$\;}
-        \addlegendentry{\,Add $\mathbb{P}_1$\;}
-        \addlegendentry{\,Add $\mathbb{P}_2$\;}
-        \addlegendentry{\,Add $\mathbb{P}_3$\;}
-
-        % Plot FEM
-        \addplot [style={solid}, mark=square*, mark size=2, color=femcolor, line width=0.8pt ]
-        table [x=h, y=P1, col sep=comma]
-            {\fem};
-
-        \addplot [style={solid}, mark=*, mark size=2, color=femcolor, line width=0.8pt ]
-        table [x=h, y=P2, col sep=comma]
-            {\fem};
-
-        \addplot [style={solid}, mark=triangle*, mark size=2, color=femcolor, line width=0.8pt ]
-        table [x=h, y=P3, col sep=comma]
-            {\fem};
-
-        % Plot Add
-        \addplot [style={dashed}, mark=square*, mark size=2, color=addcolor, line width=0.8pt ]
-        table [x=h, y=P1, col sep=comma]
-            {\add};
-
-        \addplot [style={dashed}, mark=*, mark size=2, color=addcolor, line width=0.8pt ]
-        table [x=h, y=P2, col sep=comma]
-            {\add};
-
-        \addplot [style={dashed}, mark=triangle*, mark size=2, color=addcolor, line width=0.8pt ]
-        table [x=h, y=P3, col sep=comma]
-            {\add};
-
-    \end{cvgh}
-}
-
-% L2 norm
-\newcommand{\cvgFEMCorrAlldeg}[3]{
-    \cvgFEMCorrAlldegGeneral{#1}{#2}{2,3,4}{#3}{$L^2$}
-}
-
-% H1 semi-norm
-\newcommand{\cvgFEMCorrAlldegHun}[3]{
-    \cvgFEMCorrAlldegGeneral{#1}{#2}{1,2,3}{#3}{Semi-$H^1$}
+        \node[yshift=-20pt] at (cvgaxis\cvg@iter.outer south)
+        {\pgfplotslegendfromname{cvgleg\cvg@iter}};
+    \end{tikzpicture}%
+}%
 }

@@ -26,6 +26,16 @@
 % ── Divers ─────────────────────────────────────────────────────────────────────
 \usepackage{microtype}
 
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}  % figure ↔ texte
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}     % figure [h]
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}      % figure ↔ figure
+
+
+% ── Graphiques de convergence ──────────────────────────────────────────────────
+\input{cvg}
+\input{styles}
+
+
 \title{\textbf{Résultats numériques - DG apprenable}\\
 \large ScimbaJAX-DG}
 \author{Frédérique Lecourtier}
@@ -49,7 +59,24 @@ Question centrale : Comment se comporte l'erreur ?
 \newpage
 \section{Configuration des cas tests}
 
+\subsection{Quelques notations}
+
+\begin{itemize}
+    \item $d$ : dimension spatiale
+    \item $N_\ell$ : nombre de cellules dans la direction $\ell \in \{0,\ldots,d-1\}$
+    \item $N_\text{cells} = (N_0, \ldots, N_{d-1})$ : tuple du nombre de cellules par direction
+    \item $n_\text{cells} = \prod_{\ell=0}^{d-1} N_\ell$ : nombre total de cellules
+    \item $h = \sqrt{\sum_{\ell=0}^{d-1} \frac{1}{N_\ell^2}}$ : taille caractéristique du maillage sur $[0,1]^d$, correspond au diamètre de la plus grande maille
+\end{itemize}
+
+\begin{itemize}
+    \item $p$ : degré polynomial
+    \item $n_b = (p+1)^d$ : nombre de base par maille
+\end{itemize}
+
 \subsection{Cas 1D}
+
+\subsubsection{Laplacien 1D}\label{sec:lap1d}
 
 \subsection{Cas 2D}
 
@@ -66,6 +93,43 @@ Question centrale : Comment se comporte l'erreur ?
 \end{itemize}
 
 \paragraph{Erreur}
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \begin{cvgh}[2]{L2}
+            \addseries[label=DG SIPG,type=P]{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
+            \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
+            \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
+            \setslopes{2}{5e-4}
+            \setxtickrotate[-4pt]{20}
+        \end{cvgh}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \begin{cvgh}[2]{H1semi}
+            \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
+            \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
+            \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
+            \setslopes{1}{3e-2}
+            \setxtickrotate[-4pt]{20}
+            % \setylimits{1e-3}{5e-1}
+        \end{cvgh}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \begin{cvgh}[2]{Linf}
+            \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
+            \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
+            \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
+            \setslopes{2}{5e-4}
+            \setxtickrotate[-4pt]{20}
+        \end{cvgh}
+    \end{subfigure}
+    \caption{Cas test \ref{sec:lap1d}, DG classique -- $n_\text{cells}\in\{5,10,20,40,80\}$, $n_b=2$.}
+    % \label{fig:dg-flux-comparison-p1}
+\end{figure}
 
 \paragraph{Conditionnement}
 
