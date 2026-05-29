@@ -1,0 +1,168 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Encodage & langue ──────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% ── Mise en page ───────────────────────────────────────────────────────────────
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{parskip}
+
+% ── Mathématiques ──────────────────────────────────────────────────────────────
+\usepackage{amsmath, amssymb, amsthm}
+
+% ── Tableaux & figures ─────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\graphicspath{{images/}}
+
+% ── Couleurs & hyperliens ──────────────────────────────────────────────────────
+\usepackage[dvipsnames]{xcolor}
+\usepackage[colorlinks=true, linkcolor=NavyBlue, citecolor=ForestGreen, urlcolor=NavyBlue]{hyperref}
+
+% ── Divers ─────────────────────────────────────────────────────────────────────
+\usepackage{microtype}
+
+% ── Macros ─────────────────────────────────────────────────────────────────────
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Th}{\mathcal{T}_h}
+% \newcommand{\Omega}{\Omega}
+\newcommand{\norm}[1]{\left\| #1 \right\|}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\title{\textbf{Résultats numériques — Base patchwise}\\
+       \large ScimbaJAX-DG}
+\author{Frédérique Lecourtier}
+\date{\today}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\vfill
+
+\section{Contexte}
+
+Lorsqu'on fait des bases apprenable en DG, on a plusieurs moyen d'améliorer la solution :
+\begin{itemize}
+    \item raffiner le maillage 
+    \item augmenter le nombre de base par maille 
+    \item augmenter le nombre de paramètres du réseau 
+\end{itemize}
+
+Question centrale : Comment se comporte l'erreur ?
+
+\newpage
+\section{Configuration des cas tests}
+
+\subsection{Cas 1D}
+
+\subsection{Cas 2D}
+
+\newpage
+\section{Bases Patchwise}
+
+\subsection{Évolution de l'erreur et du conditionnement en fonction...}
+
+\subsubsection{...du nombre de cellules}
+
+\begin{itemize}
+    \item ($\nearrow$) nombre de cellules
+    \item (fixé) nombre de base par maille
+    \item (fixé) nombre de paramètres du réseau
+\end{itemize}
+
+\paragraph{Erreur}
+
+\paragraph{Conditionnement}
+
+\subsubsection{...du nombre de base par maille}
+
+\begin{itemize}
+    \item (fixé) nombre de cellules
+    \item ($\nearrow$) nombre de base par maille
+    \item (fixé) nombre de paramètres du réseau
+\end{itemize}
+
+\paragraph{Erreur}
+
+\paragraph{Conditionnement}
+
+\subsubsection{...du nombre de paramètres du réseau}
+
+\begin{itemize}
+    \item (fixé) nombre de cellules
+    \item (fixé) nombre de base par maille
+    \item ($\nearrow$) nombre de paramètres du réseau
+\end{itemize}
+
+\paragraph{Erreur}
+
+\paragraph{Conditionnement}
+
+\subsection{Comparaison Matrix-Free vs Matrix-Dense}
+
+Comparer Matrix-free et Matrix-dense pour voir si on a un problème de convergence en Matrix-free.
+
+\subsection{Faut t'il toujours initialiser le réseau à identité ?}
+
+\newpage
+\section{Bases Cellwise}
+
+\subsection{Évolution de l'erreur et du conditionnement en fonction...}
+
+\subsubsection{...du nombre de cellules}
+
+\begin{itemize}
+    \item ($\nearrow$) nombre de cellules
+    \item (fixé) nombre de base par maille
+    \item (fixé) nombre de paramètres du réseau
+\end{itemize}
+
+\paragraph{Erreur}
+
+\paragraph{Conditionnement}
+
+\subsubsection{...du nombre de base par maille}
+
+\begin{itemize}
+    \item (fixé) nombre de cellules
+    \item ($\nearrow$) nombre de base par maille
+    \item (fixé) nombre de paramètres du réseau
+\end{itemize}
+
+\paragraph{Erreur}
+
+\paragraph{Conditionnement}
+
+\subsubsection{...du nombre de paramètres du réseau}
+
+\begin{itemize}
+    \item (fixé) nombre de cellules
+    \item (fixé) nombre de base par maille
+    \item ($\nearrow$) nombre de paramètres du réseau
+\end{itemize}
+
+\paragraph{Erreur}
+
+\paragraph{Conditionnement}
+
+% \subsection{Comparaison Matrix-Free vs Matrix-Dense}
+
+% Comparer Matrix-free et Matrix-dense pour voir si on a un problème de convergence en Matrix-free.
+
+% \subsection{Faut t'il toujours initialiser le réseau à identité ?}
+
+\newpage
+\section{Mapping}
+
+Faire une advection en 2d dans la direction diagonale avec un peu de diffusion.
+Comme dans le cas du papier, on a un gradient fort dans la direction (moins y a de diffusion plus c'est fort).
+Ensuite on apprend juste le mapping et normalement il devrait apprendre à pousser les mailles là où y a les forts gradients.
+
+\end{document}
