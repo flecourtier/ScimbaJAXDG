@@ -10,9 +10,9 @@
 \pgfplotsset{
     compat=newest,
     smaller labels/.style={
-        label style={font=\footnotesize},
-        tick label style={font=\footnotesize}
-    }
+            label style={font=\footnotesize},
+            tick label style={font=\footnotesize}
+        }
 }
 
 \tikzset{font=\small}
@@ -96,38 +96,38 @@
         \pgfmathtruncatemacro{\iterator}{\iterator+1}
 
         \begin{loglogaxis}[
-            smaller labels,
-            name = left_plot,
-            % axis lines
-            axis lines = left,
-            enlarge x limits={abs=10pt},
-            enlarge y limits={abs=10pt},
-            % axis x line shift = -5pt,
-            % axis y line shift = -5pt,
-            % labels
-			xmode=log,
-            xlabel = {$h$},
-            ylabel = {\rotatebox{270}{\normtype}},
-            xlabel style={at={(ticklabel* cs:1.01)},anchor=south west},
-            ylabel style={at={(ticklabel* cs:1.01)},anchor=west},
-            % ticks and labels
-            xtick=data,
-            xticklabels from table={\datatable}{h},
-            % size
-            width=\plotwidth, height=\plotheight,
-            % marks
-            mark options={solid, scale=1},
-            % grid
-            grid = major,
-            % legend
-            legend columns=\legendcolumns,
-            legend to name=leg:legendFEMCORR_\iterator,
-            legend image post style={mark options={solid, scale=1}},
-            \extraoptions % <--- Ajout des options supplémentaires ici
-        ]
-        \expandafter\printslopeinv\expandafter{\slopes}{\second}{\ypos}{\diff}
-    }
-    {
+                smaller labels,
+                name = left_plot,
+                % axis lines
+                axis lines = left,
+                enlarge x limits={abs=10pt},
+                enlarge y limits={abs=10pt},
+                % axis x line shift = -5pt,
+                % axis y line shift = -5pt,
+                % labels
+                xmode=log,
+                xlabel = {$h$},
+                ylabel = {\rotatebox{270}{\normtype}},
+                xlabel style={at={(ticklabel* cs:1.01)},anchor=south west},
+                ylabel style={at={(ticklabel* cs:1.01)},anchor=west},
+                % ticks and labels
+                xtick=data,
+                xticklabels from table={\datatable}{h},
+                % size
+                width=\plotwidth, height=\plotheight,
+                % marks
+                mark options={solid, scale=1},
+                % grid
+                grid = major,
+                % legend
+                legend columns=\legendcolumns,
+                legend to name=leg:legendFEMCORR_\iterator,
+                legend image post style={mark options={solid, scale=1}},
+                \extraoptions % <--- Ajout des options supplémentaires ici
+            ]
+            \expandafter\printslopeinv\expandafter{\slopes}{\second}{\ypos}{\diff}
+            }
+            {
         \end{loglogaxis}
         \node[yshift=-20pt] at (left_plot.outer south) {\pgfplotslegendfromname{leg:legendFEMCORR_\iterator}};
 
@@ -157,11 +157,11 @@
         \addplot [style={solid}, mark=square*, mark size=2, color=femcolor, line width=0.8pt ]
         table [x=h, y=P1, col sep=comma]
             {\fem};
-        
+
         \addplot [style={solid}, mark=*, mark size=2, color=femcolor, line width=0.8pt ]
         table [x=h, y=P2, col sep=comma]
             {\fem};
-        
+
         \addplot [style={solid}, mark=triangle*, mark size=2, color=femcolor, line width=0.8pt ]
         table [x=h, y=P3, col sep=comma]
             {\fem};
