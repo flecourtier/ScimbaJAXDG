@@ -56,6 +56,8 @@
 \gdef\cvg@currentlabel{$L^2$}
 \gdef\cvg@slopes{}
 \gdef\cvg@ypos{}
+\gdef\cvg@slopesdec{}
+\gdef\cvg@yposdec{}
 \gdef\cvg@xticklabrot{}
 \gdef\cvg@xticklabshift{0pt}
 \gdef\cvg@xmin{}
@@ -102,6 +104,10 @@
     \ifstrequal{#1}{Linf}{%
         \gdef\cvg@currentcol{errLinf}%
         \gdef\cvg@currentlabel{$L^\infty$}%
+    }{}%
+    \ifstrequal{#1}{Cond}{%
+        \gdef\cvg@currentcol{cond}%
+        \gdef\cvg@currentlabel{$\kappa$}%
     }{}%
 }
 
@@ -151,6 +157,15 @@
     \gdef\cvg@ypos{#2}%
 }
 
+% \setslopesdec{liste de pentes}{ypos}
+%   Pour fonctions decroissantes (ex: conditionnement).
+%   Triangle positionne a gauche (autour du h minimum).
+%   Exemple : \setslopesdec{2}{1e6}
+\newcommand{\setslopesdec}[2]{%
+    \gdef\cvg@slopesdec{#1}%
+    \gdef\cvg@yposdec{#2}%
+}
+
 % \setxtickrotate[yshift]{angle}
 %   Exemple : \setxtickrotate{45}  ou  \setxtickrotate[-5pt]{45}
 \newcommand{\setxtickrotate}[2][0pt]{%
@@ -177,14 +192,15 @@
 %
 % Arguments :
 %   [legendcols] : colonnes de légende (défaut : 1)
-%   {norme}      : L2, H1semi ou Linf
+%   {norme}      : L2, H1semi, Linf ou Cond
 %
 % Contenu :
 %   \addseries[label=..., type=Q]{méthode}{degré}{fichier.csv}
 %     label auto si omis : "méthode $\mathbb{P/Q}_{degré}$"
 %     type=P (défaut) ou Q
 %   \addrawseries{fichier.csv}{label}{options pgfplots}
-%   \setslopes{pentes}{ypos}
+%   \setslopes{pentes}{ypos}        (fonctions croissantes, triangle à droite)
+%   \setslopesdec{pentes}{ypos}     (fonctions décroissantes, triangle à gauche)
 %   \setxtickrotate[yshift]{angle}  (optionnel, ex: \setxtickrotate[-5pt]{45})
 %   \setxlimits{min}{max}           (optionnel, ex: \setxlimits{1e-3}{1e-1})
 %   \setylimits{min}{max}           (optionnel, ex: \setylimits{1e-6}{1e-1})
@@ -207,6 +223,8 @@
 \gdef\cvg@reffile{}%
 \gdef\cvg@slopes{}%
 \gdef\cvg@ypos{}%
+\gdef\cvg@slopesdec{}%
+\gdef\cvg@yposdec{}%
 \gdef\cvg@xticklabrot{}%
 \gdef\cvg@xticklabshift{0pt}%
 \gdef\cvg@xmin{}%
@@ -224,6 +242,16 @@
 \pgfplotstablegetelem{1}{h}\of\cvg@datatable%
 \pgfmathsetmacro{\cvg@hsecond}{\pgfplotsretval}%
 \pgfmathsetmacro{\cvg@hdiff}{\cvg@hfirst - \cvg@hsecond}%
+\ifx\cvg@slopesdec\empty\else
+    \pgfplotstablegetrowsof{\cvg@datatable}%
+    \pgfmathtruncatemacro{\cvg@lastidx}{\pgfplotsretval-1}%
+    \pgfmathtruncatemacro{\cvg@prevlastidx}{\pgfplotsretval-2}%
+    \pgfplotstablegetelem{\cvg@lastidx}{h}\of\cvg@datatable%
+    \pgfmathsetmacro{\cvg@hlast}{\pgfplotsretval}%
+    \pgfplotstablegetelem{\cvg@prevlastidx}{h}\of\cvg@datatable%
+    \pgfmathsetmacro{\cvg@hprevlast}{\pgfplotsretval}%
+    \pgfmathsetmacro{\cvg@hdifffromleft}{\cvg@hprevlast - \cvg@hlast}%
+\fi
 %
 \resizebox{\linewidth}{!}{%
     \begin{tikzpicture}[every node/.style={inner sep=0.5, outer sep=0.5}]
@@ -260,6 +288,10 @@
             \ifx\cvg@slopes\empty\else
                 \expandafter\printslopeinv\expandafter{\cvg@slopes}%
                 {\cvg@hsecond}{\cvg@ypos}{\cvg@hdiff}%
+            \fi
+            \ifx\cvg@slopesdec\empty\else
+                \expandafter\printslope\expandafter{\cvg@slopesdec}%
+                {\cvg@hlast}{\cvg@yposdec}{\cvg@hdifffromleft}%
             \fi
             % Tracer toutes les séries
             \the\cvg@serieslist

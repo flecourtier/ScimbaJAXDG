@@ -1,11 +1,68 @@
-%%%%%
-% Plot slopes according to h
-%%%%%
 
 % argument 1: slopes (e.g. {4,6})
 % argument 2: x position of the bottom left corner
 % argument 3: y position of the bottom left corner
 % argument 4: x length
+
+%%%%%
+% Plot slopes according to N or Kappa
+%%%%%
+
+\makeatletter
+\newcommand{\printslope}[4]{
+    \tikzset{fixed point arithmetic}
+    % get arguments
+    % #2 = xpos : plus petite valeur de h (coin haut-gauche)
+    % #3 = ypos : valeur de kappa en xpos (grande valeur, en haut)
+    % #4 = width : ecart vers la droite (hprevlast - hlast > 0)
+    \def\nero@printslope@orderlist{#1}
+    \edef\nero@printslope@xpos{#2}
+    \edef\nero@printslope@ypos{#3}
+    \edef\nero@printslope@width{#4}
+    % px = xpos + width (avant-derniere valeur de h)
+    \pgfmathparse{\nero@printslope@xpos+\nero@printslope@width}
+    \edef\nero@printslope@px{\pgfmathresult}
+    \edef\nero@printslope@py{\nero@printslope@ypos}
+    \edef\nero@printslope@qx{\nero@printslope@px}
+    \edef\nero@printslope@ry{\nero@printslope@ypos}
+    \foreach \nero@printslope@order in {#1}{
+        % qy = (px/xpos)^order * ypos > ypos  (cote gauche monte ; hypo descend vers la droite)
+        \pgfmathparse{
+            ((\nero@printslope@px/\nero@printslope@xpos)^(\nero@printslope@order))*\nero@printslope@ypos}
+        \edef\nero@printslope@qy{\pgfmathresult}
+        % cote gauche montant + hypotenuse ; angle droit en (xpos, ypos)
+        \edef\nero@aux1{\noexpand\draw[line width=0.6pt]
+            (axis cs:\nero@printslope@xpos,\nero@printslope@ypos)
+            -- (axis cs:\nero@printslope@xpos,\nero@printslope@qy)
+            -- (axis cs:\nero@printslope@px,\nero@printslope@py);}
+        \nero@aux1
+        % label de pente sur le cote gauche
+        \pgfmathparse{10^((ln(\nero@printslope@ry)+ln(\nero@printslope@qy))/(ln(10)*2))}
+        \edef\nero@printslope@labelpos{\pgfmathresult}
+        \edef\nero@aux2{\noexpand\node[anchor=east] at
+            (axis cs:\nero@printslope@xpos,\nero@printslope@labelpos)
+            {\noexpand\tiny \nero@printslope@order};}
+        \nero@aux2
+        \global\edef\nero@printslope@ry{\nero@printslope@qy}
+    }
+    % base horizontale partagee, au niveau de ypos (angle droit en bas-gauche)
+    \edef\nero@aux1{\noexpand\draw[line width=0.6pt]
+        (axis cs:\nero@printslope@xpos,\nero@printslope@ypos)
+        |- (axis cs:\nero@printslope@px,\nero@printslope@py);}
+    \nero@aux1
+    % label "1" sous la base
+    \pgfmathparse{10^((ln(\nero@printslope@px)+ln(\nero@printslope@xpos))/(ln(10)*2))}
+    \edef\nero@printslope@labelpos{\pgfmathresult}
+    \edef\nero@aux2{\noexpand\node[anchor=north] at
+        (axis cs:\nero@printslope@labelpos,\nero@printslope@ypos)
+        {\noexpand\tiny 1};}
+    \nero@aux2
+}
+\makeatother
+
+%%%%%
+% Plot slopes according to h
+%%%%%
 
 \makeatletter
 \newcommand{\printslopeinv}[4]{
@@ -22,29 +79,34 @@
     \edef\nero@printslope@qx{\pgfmathresult}
     \edef\nero@printslope@ry{\nero@printslope@ypos}
     \foreach \nero@printslope@order in {#1}{
-        \pgfmathparse{
-        ((\nero@printslope@px/\nero@printslope@xpos)^(\nero@printslope@order))*\nero@printslope@ypos}
-        \edef\nero@printslope@qy{\pgfmathresult}
+            \pgfmathparse{
+                ((\nero@printslope@px/\nero@printslope@xpos)^(\nero@printslope@order))*\nero@printslope@ypos}
+            \edef\nero@printslope@qy{\pgfmathresult}
             \edef\nero@aux1{\noexpand\draw[line width=0.6pt]
-            (axis cs:\nero@printslope@xpos,\nero@printslope@ypos)
-            -- (axis cs:\nero@printslope@qx,\nero@printslope@qy)
-            -- (axis cs:\nero@printslope@px,\nero@printslope@py);}
-        \nero@aux1
-        % slope label
-        \pgfmathparse{10^((ln(\nero@printslope@ry)+ln(\nero@printslope@qy))/(ln(10)*2))}
-        \edef\nero@printslope@labelpos{\pgfmathresult}
-        \edef\nero@aux2{\noexpand\node[anchor=west] at
-            (axis cs:\nero@printslope@qx,\nero@printslope@labelpos)
-            {\noexpand\tiny \nero@printslope@order};}
-        \nero@aux2
-        \global\edef\nero@printslope@ry{\nero@printslope@qy}
-    }
+                (axis cs:\nero@printslope@xpos,\nero@printslope@ypos)
+                -- (axis cs:\nero@printslope@qx,\nero@printslope@qy)
+                -- (axis cs:\nero@printslope@px,\nero@printslope@py);}
+            \nero@aux1
+            % slope label
+            \pgfmathparse{10^((ln(\nero@printslope@ry)+ln(\nero@printslope@qy))/(ln(10)*2))}
+            \edef\nero@printslope@labelpos{\pgfmathresult}
+            \edef\nero@aux2{\noexpand\node[anchor=west] at
+                (axis cs:\nero@printslope@qx,\nero@printslope@labelpos)
+                {\noexpand\tiny \nero@printslope@order};}
+            \nero@aux2
+            \global\edef\nero@printslope@ry{\nero@printslope@qy}
+        }
     % base line
-    \draw[line width=0.6pt] (axis cs:\nero@printslope@xpos,\nero@printslope@ypos)
-        |- (axis cs:\nero@printslope@px,\nero@printslope@py);
+    \edef\nero@aux1{\noexpand\draw[line width=0.6pt]
+        (axis cs:\nero@printslope@xpos,\nero@printslope@ypos)
+        |- (axis cs:\nero@printslope@px,\nero@printslope@py);}
+    \nero@aux1
     % label of base line
     \pgfmathparse{10^((ln(\nero@printslope@px)+ln(\nero@printslope@xpos))/(ln(10)*2))}
     \edef\nero@printslope@labelpos{\pgfmathresult}
-    \node[anchor=north] at (axis cs:\nero@printslope@labelpos,\nero@printslope@ypos) {\tiny 1};
+    \edef\nero@aux2{\noexpand\node[anchor=north] at
+        (axis cs:\nero@printslope@labelpos,\nero@printslope@ypos)
+        {\noexpand\tiny 1};}
+    \nero@aux2
 }
 \makeatother
