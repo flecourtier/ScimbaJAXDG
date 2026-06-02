@@ -66,6 +66,10 @@
 \gdef\cvg@ymax{}
 \gdef\cvg@legendcols{1}
 \gdef\cvg@iter{0}
+\newif\ifcvg@showlegend
+\cvg@showlegendtrue
+\newif\ifcvg@placelegend
+\cvg@placelegendtrue
 
 % Keys pour \addseries (label= et type=)
 \pgfkeys{
@@ -80,7 +84,9 @@
     \edef\cvg@col{\cvg@currentcol}%
     \addplot[/cvg/method/#1, /cvg/degree/#2, mark options={solid}]
     table[x=h, y=\cvg@col, col sep=comma]{#3};%
-    \addlegendentry{\,#4\;}%
+    \ifcvg@showlegend
+        \addlegendentry{\,#4\;}%
+    \fi
 }
 
 % Tracer une série avec style libre
@@ -88,7 +94,9 @@
     \edef\cvg@col{\cvg@currentcol}%
     \addplot[#3, mark options={solid}]
     table[x=h, y=\cvg@col, col sep=comma]{#1};%
-    \addlegendentry{\,#2\;}%
+    \ifcvg@showlegend
+        \addlegendentry{\,#2\;}%
+    \fi
 }
 
 % Fixer la colonne CSV et le label selon la norme
@@ -184,6 +192,20 @@
     \gdef\cvg@ymax{#2}%
 }
 
+% % \hidelegend / \showlegend
+% %   Active/desactive l'affichage de la legende pour le graphique courant.
+% \newcommand{\hidelegend}{\global\cvg@showlegendfalse}
+% \newcommand{\showlegend}{\global\cvg@showlegendtrue}
+
+% \hidelocallegend / \showlocallegend
+%   Cache uniquement le bloc de legende sous le graphique,
+%   tout en conservant les entrees de legende pour un affichage externe.
+\newcommand{\hidelegend}{\global\cvg@placelegendfalse}
+\newcommand{\showlegend}{\global\cvg@placelegendtrue}
+
+% Affiche la legende du dernier graphique cvgh construit.
+\newcommand{\showlastlegend}{\pgfplotslegendfromname{cvgleg\cvg@iter}}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ENVIRONNEMENT cvgh
 %
@@ -231,6 +253,8 @@
 \gdef\cvg@xmax{}%
 \gdef\cvg@ymin{}%
 \gdef\cvg@ymax{}%
+\global\cvg@showlegendtrue%
+\global\cvg@placelegendtrue%
 \gdef\cvg@legendcols{#1}%
 % Fixer la norme
 \cvg@setnorm{#2}%
@@ -296,8 +320,12 @@
             % Tracer toutes les séries
             \the\cvg@serieslist
         \end{loglogaxis}
-        \node[yshift=-20pt] at (cvgaxis\cvg@iter.outer south)
-        {\pgfplotslegendfromname{cvgleg\cvg@iter}};
+        \ifcvg@showlegend
+            \ifcvg@placelegend
+                \node[yshift=-20pt] at (cvgaxis\cvg@iter.outer south)
+                {\pgfplotslegendfromname{cvgleg\cvg@iter}};
+            \fi
+        \fi
     \end{tikzpicture}%
 }%
 }
