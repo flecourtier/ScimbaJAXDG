@@ -58,6 +58,12 @@ Question centrale : Comment se comporte l'erreur ?
 \newpage
 \section{Configuration des cas tests}
 
+\subsection{Quelques remarques}
+
+\begin{itemize}
+    \item Vérifier le type d'élément (je crois c'est du $\mathbb{Q}$ en fait.)
+\end{itemize}
+
 \subsection{Quelques notations}
 
 \begin{itemize}
@@ -91,15 +97,23 @@ Question centrale : Comment se comporte l'erreur ?
     \item (fixé) nombre de base par maille
 \end{itemize}
 
+En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text{quad} = 2k + 1$.
+
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \begin{cvgh}[2]{L2}
             \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
+            \addseries{DG SIPG}{2}{images/DG/classical_approach/DG_SIPG_P2.csv}
+
             \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
+            \addseries{DG NIPG}{2}{images/DG/classical_approach/DG_NIPG_P2.csv}
+            
             \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
-            \setslopes{2}{5e-4}
+            \addseries{DG BZ}{2}{images/DG/classical_approach/DG_BZ_P2.csv}
+
+            \setslopes{2,3}{5e-6}
             \setxtickrotate[-4pt]{20}
         \end{cvgh}
     \end{subfigure}
@@ -107,9 +121,15 @@ Question centrale : Comment se comporte l'erreur ?
         \centering
         \begin{cvgh}[2]{H1semi}
             \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
+            \addseries{DG SIPG}{2}{images/DG/classical_approach/DG_SIPG_P2.csv}
+
             \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
+            \addseries{DG NIPG}{2}{images/DG/classical_approach/DG_NIPG_P2.csv}
+            
             \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
-            \setslopes{1}{3e-2}
+            \addseries{DG BZ}{2}{images/DG/classical_approach/DG_BZ_P2.csv}
+
+            \setslopes{1,2}{3e-4}
             \setxtickrotate[-4pt]{20}
             % \setylimits{1e-3}{5e-1}
         \end{cvgh}
@@ -119,25 +139,37 @@ Question centrale : Comment se comporte l'erreur ?
         \centering
         \begin{cvgh}[2]{Linf}
             \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
+            \addseries{DG SIPG}{2}{images/DG/classical_approach/DG_SIPG_P2.csv}
+
             \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
+            \addseries{DG NIPG}{2}{images/DG/classical_approach/DG_NIPG_P2.csv}
+            
             \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
-            \setslopes{2}{5e-4}
+            \addseries{DG BZ}{2}{images/DG/classical_approach/DG_BZ_P2.csv}
+
+            \setslopes{2,3}{5e-6}
             \setxtickrotate[-4pt]{20}
         \end{cvgh}
     \end{subfigure}
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \begin{cvgh}[2]{Cond}
-            \addseries[label=DG SIPG,type=P]{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
+            \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
+            \addseries{DG SIPG}{2}{images/DG/classical_approach/DG_SIPG_P2.csv}
+
             \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
+            \addseries{DG NIPG}{2}{images/DG/classical_approach/DG_NIPG_P2.csv}
+            
             \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
-            \setslopesdec{2}{1e2}
-            % \setylimits{1e1}{1e6}
+            \addseries{DG BZ}{2}{images/DG/classical_approach/DG_BZ_P2.csv}
+
+            \setslopesdec{2,3}{1e2}
             \setxtickrotate[-4pt]{20}
+            % \setylimits{1e1}{1e6}
         \end{cvgh}
     \end{subfigure}
 
-    \caption{Cas test \ref{sec:lap1d}, DG classique -- $n_\text{cells}\in\{5,10,20,40,80\}$, $n_b=2$, $n_\text{quad}=3$.}
+    \caption{Cas test \ref{sec:lap1d}, DG classique -- $n_\text{cells}\in\{5,10,20,40,80\}$.}
 \end{figure}
 
 \subsubsection{...du nombre de base par maille}
