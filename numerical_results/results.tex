@@ -105,15 +105,20 @@ En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \begin{cvgh}[2]{L2}
-            \hidelegend
-            \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
-            \addseries{DG SIPG}{2}{images/DG/classical_approach/DG_SIPG_P2.csv}
+            \setcsvdir{images/DG/classical_approach/solve_1d_laplacian_k_fixed}
 
-            \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
-            \addseries{DG NIPG}{2}{images/DG/classical_approach/DG_NIPG_P2.csv}
-            
-            \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
-            \addseries{DG BZ}{2}{images/DG/classical_approach/DG_BZ_P2.csv}
+            % \setxcol{n_cells_total}{$n_\text{cells}$}
+
+            \hidelegend
+
+            \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
+            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
+
+            \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+            \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
+
+            \addseries{DG BZ}{1}{DG_BZ_P1.csv}
+            \addseries{DG BZ}{2}{DG_BZ_P2.csv}
 
             \setslopes{2,3}{5e-6}
             \setxtickrotate[-4pt]{20}
@@ -122,16 +127,18 @@ En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \begin{cvgh}[2]{H1semi}
+            \setcsvdir{images/DG/classical_approach/solve_1d_laplacian_k_fixed}
+
             \hidelegend
 
-            \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
-            \addseries{DG SIPG}{2}{images/DG/classical_approach/DG_SIPG_P2.csv}
+            \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
+            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
 
-            \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
-            \addseries{DG NIPG}{2}{images/DG/classical_approach/DG_NIPG_P2.csv}
-            
-            \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
-            \addseries{DG BZ}{2}{images/DG/classical_approach/DG_BZ_P2.csv}
+            \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+            \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
+
+            \addseries{DG BZ}{1}{DG_BZ_P1.csv}
+            \addseries{DG BZ}{2}{DG_BZ_P2.csv}
 
             \setslopes{1,2}{3e-4}
             \setxtickrotate[-4pt]{20}
@@ -142,16 +149,18 @@ En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \begin{cvgh}[2]{Linf}
+            \setcsvdir{images/DG/classical_approach/solve_1d_laplacian_k_fixed}
+
             \hidelegend
 
-            \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
-            \addseries{DG SIPG}{2}{images/DG/classical_approach/DG_SIPG_P2.csv}
+            \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
+            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
 
-            \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
-            \addseries{DG NIPG}{2}{images/DG/classical_approach/DG_NIPG_P2.csv}
-            
-            \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
-            \addseries{DG BZ}{2}{images/DG/classical_approach/DG_BZ_P2.csv}
+            \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+            \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
+
+            \addseries{DG BZ}{1}{DG_BZ_P1.csv}
+            \addseries{DG BZ}{2}{DG_BZ_P2.csv}
 
             \setslopes{2,3}{5e-6}
             \setxtickrotate[-4pt]{20}
@@ -160,14 +169,17 @@ En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \begin{cvgh}[3]{Cond}
+            \setcsvdir{images/DG/classical_approach/solve_1d_laplacian_k_fixed}
+
             \hidelegend
-            \addseries{DG SIPG}{1}{images/DG/classical_approach/DG_SIPG_P1.csv}
-            \addseries{DG NIPG}{1}{images/DG/classical_approach/DG_NIPG_P1.csv}
-            \addseries{DG BZ}{1}{images/DG/classical_approach/DG_BZ_P1.csv}
-            
-            \addseries{DG SIPG}{2}{images/DG/classical_approach/DG_SIPG_P2.csv}
-            \addseries{DG NIPG}{2}{images/DG/classical_approach/DG_NIPG_P2.csv}
-            \addseries{DG BZ}{2}{images/DG/classical_approach/DG_BZ_P2.csv}
+
+            \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
+            \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+            \addseries{DG BZ}{1}{DG_BZ_P1.csv}
+
+            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
+            \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
+            \addseries{DG BZ}{2}{DG_BZ_P2.csv}
 
             \setslopesdec{2,3}{1e2}
             \setxtickrotate[-4pt]{20}

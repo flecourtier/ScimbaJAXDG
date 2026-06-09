@@ -65,6 +65,9 @@
 \gdef\cvg@ymin{}
 \gdef\cvg@ymax{}
 \gdef\cvg@legendcols{1}
+\gdef\cvg@xcol{h}
+\gdef\cvg@xlabel{$h$}
+\gdef\cvg@csvdir{}
 \gdef\cvg@iter{0}
 \newif\ifcvg@showlegend
 \cvg@showlegendtrue
@@ -83,7 +86,7 @@
 \newcommand{\cvg@plotone}[4]{%
     \edef\cvg@col{\cvg@currentcol}%
     \addplot[/cvg/method/#1, /cvg/degree/#2, mark options={solid}]
-    table[x=h, y=\cvg@col, col sep=comma]{#3};%
+    table[x=\cvg@xcol, y=\cvg@col, col sep=comma]{#3};%
     \ifcvg@showlegend
         \addlegendentry{\,#4\;}%
     \fi
@@ -93,7 +96,7 @@
 \newcommand{\cvg@plotraw}[3]{%
     \edef\cvg@col{\cvg@currentcol}%
     \addplot[#3, mark options={solid}]
-    table[x=h, y=\cvg@col, col sep=comma]{#1};%
+    table[x=\cvg@xcol, y=\cvg@col, col sep=comma]{#1};%
     \ifcvg@showlegend
         \addlegendentry{\,#2\;}%
     \fi
@@ -138,11 +141,17 @@
     \else
         \protected@edef\cvg@label{\cvg@nameonly\unexpanded{ $\mathbb{P}_{#3}$}}%
     \fi
-    \ifx\cvg@reffile\empty \xdef\cvg@reffile{#4}\fi%
+    % Chemin complet : préfixe si \setcsvdir a été appelé
+    \ifx\cvg@csvdir\empty
+        \edef\cvg@fullpath{#4}%
+    \else
+        \edef\cvg@fullpath{\cvg@csvdir/#4}%
+    \fi
+    \ifx\cvg@reffile\empty \xdef\cvg@reffile{\cvg@fullpath}\fi%
     \cvg@toks=\expandafter{\cvg@label}%
     \protected@edef\cvg@tmp{%
         \unexpanded\expandafter{\the\cvg@serieslist}%
-        \noexpand\cvg@plotone{#2}{#3}{#4}{\the\cvg@toks}%
+        \noexpand\cvg@plotone{#2}{#3}{\cvg@fullpath}{\the\cvg@toks}%
     }%
     \global\cvg@serieslist=\expandafter{\cvg@tmp}%
 }
@@ -150,10 +159,15 @@
 % \addrawseries{fichier.csv}{label légende}{options pgfplots}
 %   Style entièrement libre (hors registre).
 \newcommand{\addrawseries}[3]{%
-    \ifx\cvg@reffile\empty \xdef\cvg@reffile{#1}\fi%
+    \ifx\cvg@csvdir\empty
+        \edef\cvg@fullpath{#1}%
+    \else
+        \edef\cvg@fullpath{\cvg@csvdir/#1}%
+    \fi
+    \ifx\cvg@reffile\empty \xdef\cvg@reffile{\cvg@fullpath}\fi%
     \protected@edef\cvg@tmp{%
         \unexpanded\expandafter{\the\cvg@serieslist}%
-        \noexpand\cvg@plotraw{#1}{#2}{#3}%
+        \noexpand\cvg@plotraw{\cvg@fullpath}{#2}{#3}%
     }%
     \global\cvg@serieslist=\expandafter{\cvg@tmp}%
 }
@@ -179,6 +193,19 @@
 \newcommand{\setxtickrotate}[2][0pt]{%
     \gdef\cvg@xticklabrot{#2}%
     \gdef\cvg@xticklabshift{#1}%
+}
+
+% \setcsvdir{dossier}
+%   Préfixe ajouté à tous les chemins CSV du graphique courant.
+%   Exemple : \setcsvdir{images/DG/classical_approach}
+\newcommand{\setcsvdir}[1]{\gdef\cvg@csvdir{#1}}
+
+% \setxcol{colonne CSV}{label axe}
+%   Exemple : \setxcol{n_cells}{$n_\text{cells}$}
+%   Par défaut : colonne = h, label = $h$
+\newcommand{\setxcol}[2]{%
+    \gdef\cvg@xcol{#1}%
+    \gdef\cvg@xlabel{#2}%
 }
 
 % \setxlimits{min}{max}  /  \setylimits{min}{max}
@@ -221,9 +248,11 @@
 %     label auto si omis : "méthode $\mathbb{P/Q}_{degré}$"
 %     type=P (défaut) ou Q
 %   \addrawseries{fichier.csv}{label}{options pgfplots}
+%   \setcsvdir{dossier}             (optionnel, préfixe pour tous les chemins CSV)
 %   \setslopes{pentes}{ypos}        (fonctions croissantes, triangle à droite)
 %   \setslopesdec{pentes}{ypos}     (fonctions décroissantes, triangle à gauche)
 %   \setxtickrotate[yshift]{angle}  (optionnel, ex: \setxtickrotate[-5pt]{45})
+%   \setxcol{colonne}{label}        (optionnel, ex: \setxcol{n_cells}{$n_\text{cells}$})
 %   \setxlimits{min}{max}           (optionnel, ex: \setxlimits{1e-3}{1e-1})
 %   \setylimits{min}{max}           (optionnel, ex: \setylimits{1e-6}{1e-1})
 %
@@ -253,6 +282,9 @@
 \gdef\cvg@xmax{}%
 \gdef\cvg@ymin{}%
 \gdef\cvg@ymax{}%
+\gdef\cvg@xcol{h}%
+\gdef\cvg@xlabel{$h$}%
+\gdef\cvg@csvdir{}%
 \global\cvg@showlegendtrue%
 \global\cvg@placelegendtrue%
 \gdef\cvg@legendcols{#1}%
@@ -261,18 +293,18 @@
 }{%
 % Lire le CSV de référence pour les ticks en x et les pentes
 \pgfplotstableread[col sep=comma]{\cvg@reffile}\cvg@datatable%
-\pgfplotstablegetelem{0}{h}\of\cvg@datatable%
+\pgfplotstablegetelem{0}{\cvg@xcol}\of\cvg@datatable%
 \pgfmathsetmacro{\cvg@hfirst}{\pgfplotsretval}%
-\pgfplotstablegetelem{1}{h}\of\cvg@datatable%
+\pgfplotstablegetelem{1}{\cvg@xcol}\of\cvg@datatable%
 \pgfmathsetmacro{\cvg@hsecond}{\pgfplotsretval}%
 \pgfmathsetmacro{\cvg@hdiff}{\cvg@hfirst - \cvg@hsecond}%
 \ifx\cvg@slopesdec\empty\else
     \pgfplotstablegetrowsof{\cvg@datatable}%
     \pgfmathtruncatemacro{\cvg@lastidx}{\pgfplotsretval-1}%
     \pgfmathtruncatemacro{\cvg@prevlastidx}{\pgfplotsretval-2}%
-    \pgfplotstablegetelem{\cvg@lastidx}{h}\of\cvg@datatable%
+    \pgfplotstablegetelem{\cvg@lastidx}{\cvg@xcol}\of\cvg@datatable%
     \pgfmathsetmacro{\cvg@hlast}{\pgfplotsretval}%
-    \pgfplotstablegetelem{\cvg@prevlastidx}{h}\of\cvg@datatable%
+    \pgfplotstablegetelem{\cvg@prevlastidx}{\cvg@xcol}\of\cvg@datatable%
     \pgfmathsetmacro{\cvg@hprevlast}{\pgfplotsretval}%
     \pgfmathsetmacro{\cvg@hdifffromleft}{\cvg@hprevlast - \cvg@hlast}%
 \fi
@@ -294,12 +326,12 @@
                 axis lines=left,
                 enlarge x limits={abs=10pt},
                 enlarge y limits={abs=10pt},
-                xlabel={$h$},
+                xlabel={\cvg@xlabel},
                 ylabel={\rotatebox{270}{\cvg@currentlabel}},
                 xlabel style={at={(ticklabel* cs:1.01)}, anchor=south west},
                 ylabel style={at={(ticklabel* cs:1.01)}, anchor=west},
                 xtick=data,
-                xticklabels from table={\cvg@datatable}{h},
+                xticklabels from table={\cvg@datatable}{\cvg@xcol},
                 width=\cvgplotwidth, height=\cvgplotheight,
                 mark options={solid, scale=1},
                 ytick style={draw=none},
