@@ -69,6 +69,7 @@
 \gdef\cvg@xlabel{$h$}
 \gdef\cvg@csvdir{}
 \gdef\cvg@iter{0}
+\gdef\cvg@xtickprecision{3}
 \newif\ifcvg@showlegend
 \cvg@showlegendtrue
 \newif\ifcvg@placelegend
@@ -208,6 +209,11 @@
     \gdef\cvg@xlabel{#2}%
 }
 
+% \setxtickprecision{n}
+%   Nombre de décimales pour les labels de l'axe x (défaut : 3).
+%   Exemple : \setxtickprecision{2}
+\newcommand{\setxtickprecision}[1]{\gdef\cvg@xtickprecision{#1}}
+
 % \setxlimits{min}{max}  /  \setylimits{min}{max}
 %   Exemple : \setxlimits{1e-3}{1e-1}
 \newcommand{\setxlimits}[2]{%
@@ -285,6 +291,7 @@
 \gdef\cvg@xcol{h}%
 \gdef\cvg@xlabel{$h$}%
 \gdef\cvg@csvdir{}%
+\gdef\cvg@xtickprecision{3}%
 \global\cvg@showlegendtrue%
 \global\cvg@placelegendtrue%
 \gdef\cvg@legendcols{#1}%
@@ -331,7 +338,7 @@
                 xlabel style={at={(ticklabel* cs:1.01)}, anchor=south west},
                 ylabel style={at={(ticklabel* cs:1.01)}, anchor=west},
                 xtick=data,
-                xticklabels from table={\cvg@datatable}{\cvg@xcol},
+                xticklabel={\pgfmathparse{exp(\tick)}\pgfmathprintnumber[fixed, precision=\cvg@xtickprecision, zerofill=false]{\pgfmathresult}},
                 width=\cvgplotwidth, height=\cvgplotheight,
                 mark options={solid, scale=1},
                 ytick style={draw=none},

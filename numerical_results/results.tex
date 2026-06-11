@@ -58,12 +58,6 @@ Question centrale : Comment se comporte l'erreur ?
 \newpage
 \section{Configuration des cas tests}
 
-\subsection{Quelques remarques}
-
-\begin{itemize}
-    \item Vérifier le type d'élément (je crois c'est du $\mathbb{Q}$ en fait.)
-\end{itemize}
-
 \subsection{Quelques notations}
 
 \begin{itemize}
@@ -79,18 +73,75 @@ Question centrale : Comment se comporte l'erreur ?
     \item $n_b = (p+1)^d$ : nombre de base par maille
 \end{itemize}
 
+\subsection{Quelques remarques}
+
+\begin{itemize}
+%     \item Vérifier le type d'élément (je crois c'est du $\mathbb{Q}$ en fait.)
+    \item Pour SIPG, on se base sur \cite{Shahbazi2005} pour le choix du paramètre de pénalité, on prendra :
+    $$\alpha = (p+1)(p+d)/d, \quad \eta = \alpha/h$$
+    \item Pour NIPG, on se base sur \cite{Riviere1999} pour le choix du paramètre de pénalité, on prendra :
+    $$\alpha = 1, \quad \eta = \alpha/h$$
+\end{itemize}
+
+
 \subsection{Cas 1D}
 
 \subsubsection{Laplacien 1D}\label{sec:lap1d}
 
+Dans cette section on considère le problème de Poisson en 1D ($d=1$) suivant :
+\begin{equation*}
+    \left\{
+    \begin{aligned}
+        -\partial_{xx} u & = f, \; &  & \text{in } \; \Omega,         \\
+        u                & = 0, \; &  & \text{on } \; \partial\Omega,
+    \end{aligned}
+    \right.
+\end{equation*}
+avec $\Omega=(0,1)$ et $\partial\Omega$ son bord.
+
+On définit la solution exacte $u_\text{ex}$ de la manière suivante :
+\begin{equation*}
+    u_{\text{ex}}(x) = \frac{\sin(\pi x)}{\pi^2},
+\end{equation*}
+et le terme source $f$ associé défini par :
+\begin{equation*}
+    f(x) = \sin(\pi x).
+\end{equation*}
+
 \subsection{Cas 2D}
+
+\subsubsection{Laplacien 2D}\label{sec:lap2d}
+
+Dans cette section on considère le problème de Poisson en 2D ($d=2$) suivant :
+\begin{equation*}
+    \left\{
+    \begin{aligned}
+        -\partial_{xx} u & = f, \; &  & \text{in } \; \Omega,         \\
+        u                & = 0, \; &  & \text{on } \; \partial\Omega,
+    \end{aligned}
+    \right.
+\end{equation*}
+avec $\Omega=(0,1)^2$ et $\partial\Omega$ son bord.
+
+On définit la solution exacte $u_\text{ex}$ de la manière suivante :
+\begin{equation*}
+    u_{\text{ex}}(x,y) = \sin(\pi x)\sin(\pi y),
+\end{equation*}
+et le terme source $f$ associé défini par :
+\begin{equation*}
+    f(x,y) = 2\pi^2 \sin(\pi x)\sin(\pi y).
+\end{equation*}
 
 \newpage
 \section{Bases Analytiques}
 
 \subsection{Évolution de l'erreur et du conditionnement en fonction...}
 
-En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text{quad} = 2k + 1$.
+En prenant $k$ le degré polynomial, on considère :
+\begin{itemize}
+    \item en 1D : $n_b = k+1$ et $n_\text{quad} = 2k + 1$.
+    \item en 2D : $n_b = (k+1)^2$ et $n_\text{quad} = 2k + 1$ (nombre de pts de quad par direction).
+\end{itemize}
 
 \subsubsection{...du nombre de cellules}
 
@@ -99,29 +150,23 @@ En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text
     \item (fixé) nombre de base par maille
 \end{itemize}
 
-
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \begin{cvgh}[2]{L2}
             \setcsvdir{images/DG/classical_approach/solve_1d_laplacian_k_fixed}
-
-            % \setxcol{n_cells_total}{$n_\text{cells}$}
-
             \hidelegend
 
             \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
-            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
-
             \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+            % \addseries{DG BZ}{1}{DG_BZ_P1.csv}
+            
+            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
             \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
-
-            \addseries{DG BZ}{1}{DG_BZ_P1.csv}
-            \addseries{DG BZ}{2}{DG_BZ_P2.csv}
+            % \addseries{DG BZ}{2}{DG_BZ_P2.csv}
 
             \setslopes{2,3}{5e-6}
-            \setxtickrotate[-4pt]{20}
         \end{cvgh}
     \end{subfigure}
     \begin{subfigure}[b]{0.48\textwidth}
@@ -132,17 +177,14 @@ En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text
             \hidelegend
 
             \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
-            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
-
             \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+            % \addseries{DG BZ}{1}{DG_BZ_P1.csv}
+            
+            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
             \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
-
-            \addseries{DG BZ}{1}{DG_BZ_P1.csv}
-            \addseries{DG BZ}{2}{DG_BZ_P2.csv}
+            % \addseries{DG BZ}{2}{DG_BZ_P2.csv}
 
             \setslopes{1,2}{3e-4}
-            \setxtickrotate[-4pt]{20}
-            % \setylimits{1e-3}{5e-1}
         \end{cvgh}
     \end{subfigure}
 
@@ -150,40 +192,96 @@ En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text
         \centering
         \begin{cvgh}[2]{Linf}
             \setcsvdir{images/DG/classical_approach/solve_1d_laplacian_k_fixed}
+            \hidelegend
+
+            \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
+            \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+            % \addseries{DG BZ}{1}{DG_BZ_P1.csv}
+            
+            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
+            \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
+            % \addseries{DG BZ}{2}{DG_BZ_P2.csv}
+
+
+            \setslopes{2,3}{5e-6}
+        \end{cvgh}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \begin{cvgh}[2]{Cond}
+            \setcsvdir{images/DG/classical_approach/solve_1d_laplacian_k_fixed}
+            \hidelegend
+
+            \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
+            \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+            % \addseries{DG BZ}{1}{DG_BZ_P1.csv}
+
+            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
+            \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
+            % \addseries{DG BZ}{2}{DG_BZ_P2.csv}
+
+            \setslopesdec{2}{1e2}
+        \end{cvgh}
+    \end{subfigure}
+
+    \vspace{0.4em}
+    \centering\showlastlegend
+
+    \caption{Cas test \ref{sec:lap1d}, DG classique -- $n_\text{cells}\in\{5,10,20,40,80\}$.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \begin{cvgh}[2]{L2}
+            \setcsvdir{images/DG/classical_approach/solve_2d_laplacian_k_fixed}
+            \hidelegend
+
+            \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
+            \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+
+            \setslopes{2}{3e-3}
+        \end{cvgh}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \begin{cvgh}[2]{H1semi}
+            \setcsvdir{images/DG/classical_approach/solve_2d_laplacian_k_fixed}
 
             \hidelegend
 
             \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
-            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
-
             \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
-            \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
 
-            \addseries{DG BZ}{1}{DG_BZ_P1.csv}
-            \addseries{DG BZ}{2}{DG_BZ_P2.csv}
+            \setslopes{1}{5e-2}
+        \end{cvgh}
+    \end{subfigure}
 
-            \setslopes{2,3}{5e-6}
-            \setxtickrotate[-4pt]{20}
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \begin{cvgh}[2]{Linf}
+            \setcsvdir{images/DG/classical_approach/solve_2d_laplacian_k_fixed}
+
+            \hidelegend
+
+            \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
+            \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
+
+            \setslopes{2}{5e-3}
         \end{cvgh}
     \end{subfigure}
     \begin{subfigure}[b]{0.48\textwidth}
         \centering
         \begin{cvgh}[3]{Cond}
-            \setcsvdir{images/DG/classical_approach/solve_1d_laplacian_k_fixed}
+            \setcsvdir{images/DG/classical_approach/solve_2d_laplacian_k_fixed}
 
             \hidelegend
 
             \addseries{DG SIPG}{1}{DG_SIPG_P1.csv}
             \addseries{DG NIPG}{1}{DG_NIPG_P1.csv}
-            \addseries{DG BZ}{1}{DG_BZ_P1.csv}
 
-            \addseries{DG SIPG}{2}{DG_SIPG_P2.csv}
-            \addseries{DG NIPG}{2}{DG_NIPG_P2.csv}
-            \addseries{DG BZ}{2}{DG_BZ_P2.csv}
-
-            \setslopesdec{2,3}{1e2}
-            \setxtickrotate[-4pt]{20}
-            % \setylimits{1e1}{1e6}
+            \setslopesdec{2}{2e1}
         \end{cvgh}
     \end{subfigure}
 
@@ -200,9 +298,7 @@ En prenant $k$ le degré polynomial, on considère $n_b = k+1$ en 1D et $n_\text
     \item ($\nearrow$) nombre de base par maille
 \end{itemize}
 
-\paragraph{Erreur}
-
-\paragraph{Conditionnement}
+\textcolor{red}{\textit{Je comprend pas, il suffit de lire les graphiques au-dessus non ?}}
 
 \newpage
 \section{Bases Patchwise}
@@ -304,5 +400,10 @@ Comparer Matrix-free et Matrix-dense pour voir si on a un problème de convergen
 Faire une advection en 2d dans la direction diagonale avec un peu de diffusion.
 Comme dans le cas du papier, on a un gradient fort dans la direction (moins y a de diffusion plus c'est fort).
 Ensuite on apprend juste le mapping et normalement il devrait apprendre à pousser les mailles là où y a les forts gradients.
+
+\newpage
+
+\bibliographystyle{plain}
+\bibliography{biblio}
 
 \end{document}

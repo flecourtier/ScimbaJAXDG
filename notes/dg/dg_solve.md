@@ -169,7 +169,7 @@ Le terme de pénalité $\eta [\![u_h]\!]$ pénalise le saut de $u_h$ aux interfa
 
 En injectant ces choix de flux dans la formulation primale, on obtient :
 
-$$B_h(u_h, v) := \underbrace{\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx}_{\text{diffusion brisée}} - \underbrace{\int_\Gamma \Big( \{\nabla_h u_h\} \cdot [\![v]\!] + [\![u_h]\!] \cdot \{\nabla_h v\} \Big) \, ds}_{\text{consistance + symétrie}} + \underbrace{\int_\Gamma \eta \, [\![u_h]\!] \cdot [\![v]\!] \, ds}_{\text{pénalité}}$$
+$$B_h(u_h, v) := \underbrace{\int_\Omega \nabla_h u_h \cdot \nabla_h v \, dx}_{\text{diffusion brisée}} - \underbrace{\int_\Gamma \Big( \{\nabla_h u_h\} \cdot [\![v]\!] + [\![u_h]\!] \cdot \{\nabla_h v\} \Big) \, ds}_{\text{consistance + symétrie}} + \underbrace{\frac{\eta}{h} \int_\Gamma \, [\![u_h]\!] \cdot [\![v]\!] \, ds}_{\text{pénalité}}$$
 
 Le premier terme est la diffusion brisée, analogue au terme de la formulation continue. Le deuxième assure que la solution exacte satisfait bien la formulation discrète. Le troisième contrôle les sauts aux interfaces et garantit la stabilité.
 
